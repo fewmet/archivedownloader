@@ -135,7 +135,10 @@ function pickAudio(links) {
     const id = pillowsId(link);
     if (id) {
       return {
-        src: `https://api.pillows.su/api/get/${id}`,
+        // /api/download is the original upload, byte for byte. /api/get is a smaller
+        // streaming copy pillows makes (a 37 MB WAV comes back as about 1.4 MB),
+        // so the player uses the original too. It supports seeking and CORS.
+        src: `https://api.pillows.su/api/download/${id}`,
         download: `https://api.pillows.su/api/download/${id}`,
         page: `https://pillows.su/f/${id}`
       };
@@ -913,6 +916,20 @@ const AUDIO_EXT = {
   "image/png": "png", "image/webp": "webp", "image/gif": "gif"
 };
 
+// the file keeps the extension of the original upload; sniffing the bytes is
+// only the fallback (a QuickTime .mov looks like an .mp4 from its header)
+function originalExt(response, url, result) {
+  const disposition = response.headers.get("content-disposition") || "";
+  const named = disposition.match(/filename\*?=(?:UTF-8'')?"?([^";]+)/i);
+  let name = "";
+  try { name = named ? decodeURIComponent(named[1]) : ""; } catch { name = named ? named[1] : ""; }
+  const fromName = name.match(/\.([a-z0-9]{2,5})$/i);
+  const known = /^(mp3|wav|flac|ogg|opus|oga|m4a|mp4|mov|aac|aif|aiff|alac|wma|webm)$/;
+  if (fromName && known.test(fromName[1].toLowerCase())) return fromName[1].toLowerCase();
+  // an upload named something odd ("Loot.raw" is really a WAV) gets the type its bytes are
+  return (result && result.ext) || (fromName ? fromName[1].toLowerCase() : extFor(response, url));
+}
+
 function extFor(response, url) {
   const disposition = response.headers.get("content-disposition") || "";
   const named = disposition.match(/filename\*?=(?:UTF-8'')?"?([^";]+)/i);
@@ -1111,7 +1128,7 @@ async function sendTaggedSong(req, res, id) {
   try {
     const { audio, response, url } = await fetchAudio(song);
     const result = tagAudio(audio, tagsFor(song, era), await eraCover(era));
-    const ext = result.ext || extFor(response, url);
+    const ext = originalExt(response, url, result);
     const name = `${safeName(cleanTitle(song.title))}.${ext}`;
     console.log(`[download] ${song.title}: ${result.kind}, ${result.tagged ? "tagged" : "sent as-is"}`);
     res.writeHead(200, {
@@ -1175,7 +1192,7 @@ async function sendEraZip(req, res, eraKey, params) {
         if (zip.closed) throw new Error("client went away");
         const result = tagAudio(audio, tagsFor(song, era, i + 1), cover);
         if (result.tagged) tagged++;
-        let name = `${number} - ${safeName(cleanTitle(song.title) + label)}.${result.ext || extFor(response, url)}`;
+        let name = `${number} - ${safeName(cleanTitle(song.title) + label)}.${originalExt(response, url, result)}`;
         if (used.has(name.toLowerCase())) name = name.replace(/(\.[^.]+)$/, ` (${i + 1})$1`);
         used.add(name.toLowerCase());
         await zip.add(`${folder}/${name}`, once(result.file));

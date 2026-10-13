@@ -38,6 +38,9 @@ Set `PUBLIC=1` and a fixed `PORT`, and put a reverse proxy (Caddy) in front of i
 
 ## Downloads and tagging
 
+- **Files are always the original upload at original quality.** Nothing is converted, re-encoded or compressed. Playback and downloads both use pillows' `/api/download` (the original file), not `/api/get`, which is a much smaller compressed streaming copy. The only change made to a file is the tags, and the audio inside is bit-for-bit the same (checked by decoding before and after).
+- Downloaded files keep the original upload's extension. If the upload has an odd one (a WAV named `.raw`), the real type is used instead.
+
 - Each song's Download button and the era page's "Download era ZIP" both go through the server so the files come out tagged (`tagging.js`, ported from tracker-player's tagger): title (with features), artist and album artist "Yeat", the era as the album, the era's year, genre, track number in the ZIP, the producer credit as the comment, and the era cover.
 - MP3 gets ID3v2.3, Ogg/Opus gets Vorbis comments, FLAC gets a comment block and picture, WAV gets an ID3 chunk. M4A is passed through untagged.
 - The era ZIP lets you pick everything / unreleased only / released only, and skip snippets and partials. Files that appear on both the Unreleased and Released tabs are only included once. It also has the cover and a `tracklist.txt` (anything that failed to download is listed at the bottom).
