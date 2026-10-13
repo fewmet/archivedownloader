@@ -580,7 +580,7 @@
               <span class="zip-count" data-zip-count></span>
               <a class="btn primary small" data-zip-go href="#" download>Download</a>
             </div>
-            <p class="zip-note">Every file comes tagged (title, Yeat, era as album, year, track number, producer, cover). The ZIP builds as it downloads, so the browser won't show a total size, and big eras can take a few minutes.</p>
+            <p class="zip-note">Every file is the original upload at its original quality, never converted or re-encoded, with tags added (title, Yeat, era as album, year, track number, producer, cover). The ZIP builds as it downloads, so the browser won't show a total size, and big eras can take a few minutes.</p>
           </div>` : ""}
         </div>
       </section>
