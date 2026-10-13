@@ -54,9 +54,9 @@ Set `PUBLIC=1` and a fixed `PORT`, and put a reverse proxy (Caddy) in front of i
 
 ## Era covers
 
-Covers come from `cover-links.json` first, then the tracker's Art tab. Discord attachment links expire, so they're tried last. To fix a cover, paste a direct image link next to the era name in `cover-links.json` and restart.
+Covers come from the tracker itself first (the picture in each era's header row, read from the sheet's HTML view and served through `/cover/<era>`, the same way tracker-player does it), then `cover-links.json`, then the Art tab. Discord attachment links expire, so they're tried last. To fix a cover, paste a direct image link next to the era name in `cover-links.json` and restart.
 
-Right now AftërLyfe (Deluxe), ADL [V2] and Ongoing only have expired Discord links, so they show the era name instead of art.
+Collaboration with 2kthagoon has no picture in its header row on the tracker, so it shows the era name. Paste a direct image link next to it in `cover-links.json` to give it one.
 
 ## Settings (environment variables)
 

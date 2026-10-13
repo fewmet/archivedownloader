@@ -279,7 +279,8 @@ function isEraHeaderRow(row, nameCol = 1) {
   return clean(row[nameCol]).includes("℗") || STATS_CELL.test(clean(row[0]));
 }
 
-function buildSongs(unreleasedRows, releasedRows, artRows) {
+function buildSongs(unreleasedRows, releasedRows, artRows, sheetCovers = new Map()) {
+  let creatingFromReleased = false;
   const eras = new Map(); // looseKey -> era
   const eraOrder = [];
   const songs = [];
@@ -301,7 +302,9 @@ function buildSongs(unreleasedRows, releasedRows, artRows) {
       timeline: [],
       description: "",
       releasedAs: [],
-      cover: null
+      cover: null,
+      // an era that only shows up on the Released tab gets moved to where it belongs later
+      late: creatingFromReleased
     };
     eras.set(key, era);
     eraOrder.push(era);
@@ -369,6 +372,7 @@ function buildSongs(unreleasedRows, releasedRows, artRows) {
   /* Released tab:
      Rec. Era | Rel. Era | Name | Notes | Track Length | Date | Type | Streaming | Link(s) */
   let currentRelease = "";
+  creatingFromReleased = true;
   releasedRows.forEach((row, index) => {
     if (index === 0) return;
 
@@ -417,11 +421,15 @@ function buildSongs(unreleasedRows, releasedRows, artRows) {
 
   eraOrder.forEach(era => {
     const keys = [era.name, ...era.aliases].map(looseKey);
+    // the picture in the era's own header row on the tracker comes first (served through /cover)
+    const sheetCover = keys.map(key => sheetCovers.get(key)).find(Boolean);
+    era.sheetCover = sheetCover || null;
     // Discord attachment links expire, so they go last
     const manual = keys.map(key => manualByKey.get(key)).filter(Boolean);
     const art = keys.map(key => artCovers.get(key)).filter(Boolean);
     const expiring = url => /cdn\.discordapp\.com|media\.discordapp\.net/i.test(url);
     era.covers = [...new Set([
+      ...(sheetCover ? [`/cover/${encodeURIComponent(era.key)}`] : []),
       ...manual.filter(url => !expiring(url)),
       ...art,
       ...keys.map(key => artCovers.get("any:" + key)).filter(Boolean),
@@ -443,7 +451,211 @@ function buildSongs(unreleasedRows, releasedRows, artRows) {
     }
   });
 
-  return { eras: eraOrder.filter(era => era.counts.total), songs };
+  /*
+    Eras that only appear on the Released tab ("2093 (P2)") were added at the
+    end. Put each one right after the era it's a part of ("2093"), or failing
+    that, after the last era from the same year or earlier.
+  */
+  const ordered = eraOrder.filter(era => !era.late);
+  eraOrder.filter(era => era.late).forEach(era => {
+    const key = looseKey(era.name);
+    let at = -1;
+    ordered.forEach((other, index) => {
+      const base = looseKey(other.name);
+      if (base && key.startsWith(base) && key !== base) at = index;
+    });
+    if (at < 0 && era.year) {
+      ordered.forEach((other, index) => { if (other.year && other.year <= era.year) at = index; });
+    }
+    // after any other late eras already placed behind that same era
+    while (at >= 0 && at + 1 < ordered.length && ordered[at + 1].late && looseKey(ordered[at + 1].name) < key) at++;
+    ordered.splice(at < 0 ? ordered.length : at + 1, 0, era);
+  });
+
+  return { eras: ordered.filter(era => era.counts.total), songs };
+}
+
+/* ---------- era covers from the tracker itself ----------
+   Ported from tracker-player. The tracker drops each era's cover INTO the
+   era's header row as an in-cell image. No CSV shows those; only the sheet's
+   HTML view does, as docs.google.com/sheets-images-rt URLs. Those can't be
+   hotlinked from another site, so /cover/:era fetches them server-side. */
+
+const HTML_ENTITIES = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", "#39": "'" };
+
+function decodeHtml(text) {
+  return String(text || "").replace(/&(#x?[0-9a-f]+|[a-z]+);/gi, (whole, code) => {
+    const key = code.toLowerCase();
+    if (HTML_ENTITIES[key]) return HTML_ENTITIES[key];
+    if (key[0] === "#") {
+      const number = key[1] === "x" ? parseInt(key.slice(2), 16) : parseInt(key.slice(1), 10);
+      if (Number.isFinite(number)) return String.fromCodePoint(number);
+    }
+    return whole;
+  });
+}
+
+function cellText(html) {
+  return decodeHtml(String(html || "")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(p|div)>/gi, "\n")
+    .replace(/<[^>]*>/g, "")).replace(/ /g, " ").trim();
+}
+
+// a heading row can hold a wide logo and the square cover; the squarest one wins
+function pickRowImage(rowHtml) {
+  const found = [];
+  const pattern = /<img\b[^>]*\bsrc\s*=\s*["']([^"']+)["']/gi;
+  let match;
+  while ((match = pattern.exec(rowHtml))) found.push(decodeHtml(match[1]));
+  if (found.length <= 1) return found[0] || "";
+  const squareness = url => {
+    const size = String(url).match(/=w(\d+)-h(\d+)/i);
+    if (!size) return 1;
+    const w = Number(size[1]);
+    const h = Number(size[2]);
+    return w && h ? Math.min(w, h) / Math.max(w, h) : 0;
+  };
+  let best = found[0];
+  found.forEach(url => { if (squareness(url) > squareness(best) + 0.05) best = url; });
+  return best;
+}
+
+function parseSheetHtml(html) {
+  const table = String(html || "").match(/<table[\s\S]*?<\/table>/i);
+  if (!table) return { rows: [], imageRows: [] };
+  const rows = [];
+  const imageRows = [];
+  const rowPattern = /<tr\b[^>]*>([\s\S]*?)<\/tr>/gi;
+  let row;
+  while ((row = rowPattern.exec(table[0]))) {
+    const cells = [];
+    const cellPattern = /<t([dh])\b([^>]*)>([\s\S]*?)<\/t\1>/gi;
+    let cell;
+    while ((cell = cellPattern.exec(row[1]))) {
+      if (cell[1].toLowerCase() === "h") continue; // Google's row-number gutter
+      const span = cell[2].match(/\bcolspan\s*=\s*["']?(\d+)/i);
+      const width = Math.min(span ? Number(span[1]) : 1, 50);
+      cells.push(cellText(cell[3]));
+      for (let i = 1; i < width; i++) cells.push("");
+    }
+    if (cells.length) {
+      rows.push(cells);
+      imageRows.push(pickRowImage(row[1]));
+    }
+  }
+  return { rows, imageRows };
+}
+
+// "=w105-h104" is the thumbnail the cell shows; a plain width gets a proper cover
+const atCoverSize = url => String(url || "").replace(/=[swh]\d+(-[hw]\d+)?(-[a-z0-9]+)*$/i, "") + "=w600";
+
+// an era header names the era, then the other names it goes by in brackets
+function eraNamesInCell(cell) {
+  const lines = clean(cell).split("\n").map(line => line.trim()).filter(Boolean);
+  if (!lines.length) return [];
+  const names = [lines[0]];
+  const trimmed = lines[0].replace(/\s*\(.*$/, "").trim();
+  if (trimmed && trimmed !== lines[0]) names.push(trimmed);
+  lines.forEach(line => {
+    const inside = line.match(/^\((.+)\)$/);
+    if (!inside) return;
+    inside[1].split(",").forEach(alias => {
+      const name = alias.trim();
+      if (name && name.length <= 60 && !/^(prod|feat|with|collaboration)\b/i.test(name)) names.push(name);
+    });
+  });
+  return names;
+}
+
+async function readSheetHtml(gid) {
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/htmlview/sheet?headers=true&gid=${gid}`;
+  const response = await fetch(url, { signal: AbortSignal.timeout(60000) });
+  if (!response.ok) throw new Error(`sheet view ${response.status}`);
+  return parseSheetHtml(await response.text());
+}
+
+function headerIndexes(rows) {
+  for (let i = 0; i < Math.min(rows.length, 10); i++) {
+    const labels = rows[i].map(cell => cell.split("\n")[0].trim().toLowerCase());
+    const name = labels.findIndex(label => label === "name");
+    if (name >= 0) return { headerRow: i, name, era: labels.findIndex(label => /^(rec\. )?era$/.test(label)) };
+  }
+  return { headerRow: 0, name: 1, era: 0 };
+}
+
+const ERA_TALLY = /\d+\s*(og files?|total full|full|tagged|partial|snippets?|unavailable|(ep|mixtape|album) tracks|singles)/i;
+
+// looseKey(era name) -> the Google image URL for that era's cover
+async function readSheetImages() {
+  const byEra = new Map();
+  const underHeading = new Map();
+  const add = (map, name, url) => {
+    const key = looseKey(name);
+    if (key && !map.has(key)) map.set(key, url);
+  };
+
+  // song tabs first: art in an era's own header row is the era's own cover
+  for (const gid of [TABS.unreleased.gid, TABS.released.gid]) {
+    const grid = await readSheetHtml(gid);
+    const { headerRow, name, era } = headerIndexes(grid.rows);
+    grid.rows.forEach((row, index) => {
+      const image = grid.imageRows[index];
+      if (!image || index <= headerRow) return;
+      const at = atCoverSize(image);
+      eraNamesInCell(row[name]).forEach(n => add(byEra, n, at));
+      // the songs under a heading can file themselves under a different name
+      if (era < 0) return;
+      for (let next = index + 1; next < grid.rows.length && next <= index + 8; next++) {
+        if (grid.imageRows[next]) break;
+        const cell = clean(grid.rows[next][era]);
+        if (!cell || ERA_TALLY.test(cell)) continue;
+        eraNamesInCell(cell).forEach(n => add(underHeading, n, at));
+        break;
+      }
+    });
+  }
+  underHeading.forEach((url, key) => { if (!byEra.has(key)) byEra.set(key, url); });
+  const fromSongTabs = byEra.size;
+
+  // then the Art tab, for eras the song tabs had no picture for
+  try {
+    const grid = await readSheetHtml(TABS.art.gid);
+    const { headerRow, name, era } = headerIndexes(grid.rows);
+    grid.rows.forEach((row, index) => {
+      const image = grid.imageRows[index];
+      if (!image || index <= headerRow) return;
+      const at = atCoverSize(image);
+      [...(era >= 0 ? eraNamesInCell(row[era]) : []), ...eraNamesInCell(row[name])].forEach(n => add(byEra, n, at));
+    });
+  } catch (err) {
+    console.warn("[covers] art tab:", err.message);
+  }
+
+  console.log(`[covers] ${byEra.size} era names have art on the tracker (${fromSongTabs} from era headers)`);
+  return byEra;
+}
+
+const sheetImageBytes = new Map(); // era key -> { at, type, body }
+
+async function sheetCoverImage(era) {
+  if (!era || !era.sheetCover) return null;
+  const held = sheetImageBytes.get(era.key);
+  if (held && Date.now() - held.at < 6 * 60 * 60 * 1000 && held.url === era.sheetCover) return held;
+
+  // Google now and then refuses one of a burst of requests; one retry helps
+  let response = await fetch(era.sheetCover, { signal: AbortSignal.timeout(20000) }).catch(() => null);
+  if (!response || !response.ok) {
+    await new Promise(resolve => setTimeout(resolve, 600));
+    response = await fetch(era.sheetCover, { signal: AbortSignal.timeout(20000) }).catch(() => null);
+  }
+  const type = response && (response.headers.get("content-type") || "").split(";")[0].trim().toLowerCase();
+  if (!response || !response.ok || !/^image\//.test(type)) return null;
+
+  const image = { at: Date.now(), url: era.sheetCover, type, body: Buffer.from(await response.arrayBuffer()) };
+  if (sheetImageBytes.size > 80) sheetImageBytes.clear();
+  sheetImageBytes.set(era.key, image);
+  return image;
 }
 
 /* ---------- the other tabs (Snippets, Lives, Videos, ...) ---------- */
@@ -536,7 +748,15 @@ async function load() {
     }
   }));
 
-  const { eras, songs } = buildSongs(rows.unreleased, rows.released, rows.art);
+  let sheetCovers;
+  try {
+    sheetCovers = await readSheetImages();
+  } catch (err) {
+    console.warn("[covers] reading the tracker's pictures failed:", err.message);
+    sheetCovers = cache && cache.sheetCovers ? cache.sheetCovers : new Map();
+  }
+
+  const { eras, songs } = buildSongs(rows.unreleased, rows.released, rows.art, sheetCovers);
   const eraByLoose = new Map();
   eras.forEach(era => [era.name, ...era.aliases].forEach(name => eraByLoose.set(looseKey(name), era)));
   const eraLookup = name => eraByLoose.get(looseKey(name)) || null;
@@ -548,6 +768,7 @@ async function load() {
 
   const next = {
     raw: rows,
+    sheetCovers,
     updatedAt: new Date().toISOString(),
     eras,
     songs,
@@ -844,6 +1065,11 @@ async function eraCover(era) {
   let found = null;
   for (const link of era.covers || []) {
     try {
+      if (link.startsWith("/cover/")) {
+        const image = await sheetCoverImage(era);
+        if (image && /^image\/(jpeg|png)$/.test(image.type)) { found = { mime: image.type, image: image.body }; break; }
+        continue;
+      }
       const response = await fetch(link, { signal: AbortSignal.timeout(15000) });
       const mime = (response.headers.get("content-type") || "").split(";")[0].trim().toLowerCase();
       if (!response.ok || !/^image\/(jpeg|jpg|png)$/.test(mime)) continue;
@@ -1017,6 +1243,21 @@ async function handle(req, res) {
     } catch (err) {
       console.error("[imgur]", err.message);
       return send(req, res, 502, "imgur.gg did not answer", "text/plain; charset=utf-8");
+    }
+  }
+
+  match = route.match(/^\/cover\/([^/]+)$/);
+  if (match) {
+    try {
+      await ensureLoaded();
+      const era = cache.eras.find(e => e.key === match[1]);
+      const image = await sheetCoverImage(era);
+      if (!image) return send(req, res, 404, "No cover", "text/plain; charset=utf-8");
+      res.writeHead(200, { "Content-Type": image.type, "Content-Length": image.body.length, "Cache-Control": "public, max-age=86400" });
+      return res.end(req.method === "HEAD" ? undefined : image.body);
+    } catch (err) {
+      console.warn("[covers]", err.message);
+      return send(req, res, 502, "Couldn't fetch that cover", "text/plain; charset=utf-8");
     }
   }
 
