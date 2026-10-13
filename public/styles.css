@@ -68,7 +68,7 @@ img { display: block; max-width: 100%; }
   border-radius: 50%;
   background: var(--text);
 }
-.mark svg { width: 26px; height: 26px; fill: var(--bg); }
+.mark svg { width: 24px; height: 24px; fill: none; stroke: var(--bg); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 .brand {
   margin-top: -6px;
   font: 700 13px var(--display);
@@ -92,19 +92,19 @@ img { display: block; max-width: 100%; }
 .credits-lead a, .credits-small a { color: var(--text); text-decoration-color: var(--accent); text-underline-offset: 3px; }
 .credits-panel { margin-top: 24px; }
 .credits-small { margin: 18px 0 0; color: var(--faint); font-size: 13px; }
-.credit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+.credit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
 .credit-card {
   position: relative;
   display: grid;
   align-content: start;
-  gap: 14px;
-  padding: 14px;
+  gap: 10px;
+  padding: 18px 20px 20px;
   border: 1px solid var(--line);
   border-radius: 18px;
   background: var(--bg);
 }
 .credit-card.lead { border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
-.credit-num { position: absolute; top: 12px; left: 16px; z-index: 1; font: 800 13px var(--display); color: rgba(255, 255, 255, 0.85); }
+.credit-num { font: 800 13px var(--display); color: var(--faint); }
 .credit-avatar {
   width: 100%;
   aspect-ratio: 1;
@@ -114,14 +114,13 @@ img { display: block; max-width: 100%; }
   background: linear-gradient(140deg, hsl(var(--h) 70% 38%), hsl(calc(var(--h) + 60) 60% 14%));
 }
 .credit-avatar span { font: 800 clamp(34px, 6vw, 54px) var(--display); color: rgba(255, 255, 255, 0.92); }
-.credit-body { text-align: center; }
-.credit-body h3 { margin: 0; font-size: 18px; }
+.credit-body h3 { margin: 0; font: 800 clamp(20px, 2.4vw, 26px)/1.15 var(--display); letter-spacing: -0.01em; overflow-wrap: anywhere; }
 .credit-handle { margin: 2px 0 8px; color: var(--muted); font-size: 13px; }
-.credit-body ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 13px; font-weight: 600; }
+.credit-body ul { list-style: none; margin: 12px 0 0; padding: 12px 0 0; border-top: 1px solid var(--line); display: grid; gap: 5px; font-size: 13px; font-weight: 600; color: #d6d6d3; }
 .credit-link { display: inline-block; margin-top: 10px; font-size: 13px; color: var(--accent); }
 @media (max-width: 720px) {
   .credit-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-  .credit-body h3 { font-size: 16px; }
+  .credit-card { padding: 14px 14px 16px; }
 }
 
 .credits {
@@ -599,7 +598,7 @@ main { max-width: 1120px; margin: 0 auto; padding: 8px 16px 40px; outline: none;
   body.has-player { --player-h: 128px; }
   .top { padding-top: 12px; gap: 10px; }
   .mark { width: 38px; height: 38px; }
-  .mark svg { width: 22px; height: 22px; }
+  .mark svg { width: 20px; height: 20px; }
   .tabs { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; max-width: 100%; scrollbar-width: none; }
   .tabs::-webkit-scrollbar { display: none; }
   .hero { padding-top: 18px; }

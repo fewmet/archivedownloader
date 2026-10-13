@@ -680,12 +680,10 @@
   ];
 
   function creditCard(person, index) {
-    const initials = person.initials || person.name.split(/\s+/).map(word => word[0]).join("").slice(0, 2).toUpperCase();
     const link = person.url ? `<a class="credit-link" href="${esc(person.url)}" target="_blank" rel="noopener">${esc(person.linkText || person.url.replace(/^https?:\/\//, ""))}</a>` : "";
     return `
       <article class="credit-card ${person.lead ? "lead" : ""}">
         <span class="credit-num">${String(index + 1).padStart(2, "0")}</span>
-        <div class="credit-avatar" style="--h:${hue(person.name)}"><span>${esc(initials)}</span></div>
         <div class="credit-body">
           <h3>${esc(person.name)}</h3>
           ${person.handle ? `<p class="credit-handle">${esc(person.handle)}</p>` : ""}
@@ -704,7 +702,7 @@
     // the people who keep the Yeat Trackër up to date
     const TRACKER_EDITORS = ["raglord", "red.", "shock", "Snarke", "zamfir"];
     const trackerCredits = [
-      { name: "Yeat Trackër", initials: "YT", roles: ["Every song, era, date and note on this site", "Era covers (Art tab)"], url: sheetUrl, linkText: "Open the tracker", lead: true },
+      { name: "Yeat Trackër", roles: ["Every song, era, date and note on this site", "Era covers"], url: sheetUrl, linkText: "Open the tracker", lead: true },
       ...TRACKER_EDITORS.map(name => ({ name, roles: ["Yeat Trackër Editor"] }))
     ];
     const fileCredits = [
