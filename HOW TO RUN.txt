@@ -1,0 +1,56 @@
+ARCHIVEDOWNLOADER - how to run it
+
+archivedownloader is a Yeat port of The Ultimate Uzi Archive
+(https://uziarchive.top), the Lil Uzi Vert archive run by @flexbymistake.
+The idea and design are theirs. This is just remade for Yeat.
+
+
+1. Unzip the folder somewhere (Desktop or Documents is fine).
+   Don't run it from inside the zip, it needs to be unzipped first.
+
+2. Open the folder and double-click:
+     Windows:  Start archivedownloader (Windows).bat
+     Mac:      Start archivedownloader (Mac).command
+
+3. Your browser opens the site by itself. Keep the black window open
+   while you use it. Close that window to stop the site.
+
+The first time, it downloads Node.js (the thing that runs the site)
+into a "runtime" folder inside this folder. That's about 30-40 MB and
+only happens once. Nothing gets installed on your computer. If you
+already have Node.js 18 or newer, it skips the download.
+
+You need internet the whole time, since the songs and the tracker
+are loaded live.
+
+
+If something goes wrong
+
+Windows says "Windows protected your PC":
+  click "More info", then "Run anyway".
+
+Mac says it can't open the file because it's from an unidentified developer:
+  right-click (or Control-click) the .command file, choose Open,
+  then click Open again. You only have to do this once.
+  If it says you don't have permission, open Terminal, type
+  chmod +x  (with a space after it), drag the .command file into the
+  Terminal window, and press Enter. Then double-click it again.
+
+The browser didn't open:
+  look at the black window, it says the address (usually
+  http://localhost:3000). Type that into your browser.
+
+"Couldn't download Node.js":
+  check your internet, or install Node.js from https://nodejs.org
+  and double-click the start file again.
+
+
+Credits
+
+Original site and design: The Ultimate Uzi Archive, https://uziarchive.top
+  zdb (@zdb_), Bully (@localbully88), Flex By Mistake (@flexbymistake,
+  site creator) and Overlord (@wrldoverlord)
+Yeat song data: the Yeat Trackër, edited by raglord, red., shock,
+  Snarke and zamfir
+None of them make or run this port, so don't send them problems
+with it. The site has a Credits page with all of this too.

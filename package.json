@@ -1,0 +1,12 @@
+{
+  "name": "archivedownloader",
+  "version": "1.2.0",
+  "description": "A Yeat port of The Ultimate Uzi Archive (uziarchive.top) by @flexbymistake",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
