@@ -1,0 +1,18 @@
+{
+  "instructions": "Paste a direct image URL after each era name - one that ends in .jpg, .png or .webp, not a link to a page. Leave an era blank to keep the player's generated cover. Save this file as cover-links-ken.json next to index.html.",
+  "artist": "Ken Carson",
+  "erasTotal": 10,
+  "erasStillNeedingArt": [],
+  "covers": {
+    "Before Boy Barbie": "https://i1.sndcdn.com/artworks-000368360364-gaz0np-original.jpg",
+    "Boy Barbie": "https://i.ibb.co/mVyjRpGK/boybarbie-1000x1000.jpg",
+    "Teen X": "https://i.ibb.co/DPPXyNCy/teenx-1000x1000.jpg",
+    "Teen X : Relapsed": "https://i.ibb.co/fYH3m7VR/teenx-relapsed-1000x1000.jpg",
+    "Project X": "https://i.ibb.co/844s91zC/Project-X-1000x1000.jpg",
+    "X": "https://i.ibb.co/PvrLRtvd/X-1000x1000.jpg",
+    "A Great Chaos": "https://i.ibb.co/zV7sC4Zh/AGC-1000x1000.jpg",
+    "More Chaos": "https://i.ibb.co/N2XxLNxn/Morechaos-2200x2200.jpg",
+    "xperiment": "https://i.ibb.co/23627Jgw/XPERIMENT.jpg",
+    "cartunez": "https://i.ibb.co/s9L8JGqR/cartunez.jpg"
+  }
+}

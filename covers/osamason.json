@@ -1,0 +1,37 @@
+{
+  "instructions": "Paste a direct image URL after each era name - one that ends in .jpg, .png or .webp, not a link to a page. Leave an era blank to keep the player's generated cover. Save this file as cover-links-osamason.json next to index.html.",
+  "artist": "OsamaSon",
+  "erasTotal": 14,
+  "erasStillNeedingArt": [
+    "2022",
+    "PradaUMari",
+    "Im Da Man",
+    "Vengeance",
+    "Carnival",
+    "BloodyOsama",
+    "Osama Season",
+    "Flex Musix",
+    "FLXTRA",
+    "Jump Out [V1]",
+    "Jump Out [V2]",
+    "psykotic",
+    "NXO",
+    "Nocturnal"
+  ],
+  "covers": {
+    "2022": "",
+    "PradaUMari": "",
+    "Im Da Man": "",
+    "Vengeance": "",
+    "Carnival": "",
+    "BloodyOsama": "",
+    "Osama Season": "",
+    "Flex Musix": "",
+    "FLXTRA": "",
+    "Jump Out [V1]": "",
+    "Jump Out [V2]": "",
+    "psykotic": "",
+    "NXO": "",
+    "Nocturnal": ""
+  }
+}

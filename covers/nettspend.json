@@ -1,0 +1,36 @@
+{
+  "instructions": "Paste a direct image URL after each era name - one that ends in .jpg, .png or .webp, not a link to a page. Leave an era blank to keep the player's generated cover. Save this file as cover-links-nettspend.json next to index.html.",
+  "artist": "Nettspend",
+  "erasTotal": 15,
+  "erasStillNeedingArt": [
+    "KiCKDOOR",
+    "BAD ASS F*CKING KID [V2]",
+    "early life crisis [V1]",
+    "early life crisis [V2]",
+    "nettmink",
+    "early life crisis [V3]",
+    "NXO",
+    "SLUT [V1]",
+    "SLUT [V2]",
+    "KiCKDOOR ++++",
+    "gone too soon",
+    "HIM"
+  ],
+  "covers": {
+    "GUNNEX": "http://i1.sndcdn.com/artworks-S3CQa16hkdxvDn4P-GjtWvg-original.jpg",
+    "KiCKDOOR": "",
+    "BAD ASS F*CKING KID [V1]": "http://i1.sndcdn.com/artworks-ynnJjkIZvpdVvDae-8BGXUg-original.jpg",
+    "BAD ASS F*CKING KID [V2]": "",
+    "early life crisis [V1]": "",
+    "early life crisis [V2]": "",
+    "nettmink": "",
+    "early life crisis [V3]": "",
+    "NXO": "",
+    "SLUT [V1]": "",
+    "SLUT [V2]": "",
+    "KICKDOOR": "http://i1.sndcdn.com/artworks-os0SoUgOWsmbIXvu-lecPyg-original.jpg",
+    "KiCKDOOR ++++": "",
+    "gone too soon": "",
+    "HIM": ""
+  }
+}

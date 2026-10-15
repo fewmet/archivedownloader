@@ -1,0 +1,41 @@
+{
+  "instructions": "Paste a direct image URL after each era name - one that ends in .jpg, .png or .webp, not a link to a page. Leave an era blank to keep the player's generated cover. Save this file as cover-links-skimasktheslumpgod.json next to index.html.",
+  "artist": "Ski Mask the Slump God",
+  "erasTotal": 16,
+  "erasStillNeedingArt": [
+    "Cruel World",
+    "IWATHCEDHIMDROWN",
+    "DROWN IN DESIGNER",
+    "YOUWILLREGRET",
+    "BEWARE THE BOOK OF ELI",
+    "STOKELEY",
+    "Evil Twins",
+    "Sin City [V1]",
+    "Sin City [V2]",
+    "11th Dimension",
+    "Ongoing",
+    "Members Only (Vol. 1)",
+    "Members Only (Vol. 2)",
+    "VERY RARE LOST FILES",
+    "SLAPS FOR MY DROP-TOP MINI-VAN",
+    "You Will Regret (Reloaded)"
+  ],
+  "covers": {
+    "Cruel World": "",
+    "IWATHCEDHIMDROWN": "",
+    "DROWN IN DESIGNER": "",
+    "YOUWILLREGRET": "",
+    "BEWARE THE BOOK OF ELI": "",
+    "STOKELEY": "",
+    "Evil Twins": "",
+    "Sin City [V1]": "",
+    "Sin City [V2]": "",
+    "11th Dimension": "",
+    "Ongoing": "",
+    "Members Only (Vol. 1)": "",
+    "Members Only (Vol. 2)": "",
+    "VERY RARE LOST FILES": "",
+    "SLAPS FOR MY DROP-TOP MINI-VAN": "",
+    "You Will Regret (Reloaded)": ""
+  }
+}

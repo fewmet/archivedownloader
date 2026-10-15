@@ -1,0 +1,33 @@
+{
+  "instructions": "Paste a direct image URL after each era name - one that ends in .jpg, .png or .webp, not a link to a page. Leave an era blank to keep the player's generated cover. Save this file as cover-links-juicewrld.json next to index.html.",
+  "artist": "Juice WRLD",
+  "erasTotal": 12,
+  "erasStillNeedingArt": [
+    "JUICED UP THE EP",
+    "affliction",
+    "Heartbroken In Hollywood 9 9 9",
+    "JuiceWRLD 9 9 9",
+    "Untitled Project",
+    "NOTHINGS DIFFERENT ﹤/3",
+    "Goodbye & Good Riddance",
+    "Evil Twins",
+    "WRLD ON DRUGS",
+    "Death Race for Love",
+    "The Outsiders",
+    "Posthumous"
+  ],
+  "covers": {
+    "JUICED UP THE EP": "",
+    "affliction": "",
+    "Heartbroken In Hollywood 9 9 9": "",
+    "JuiceWRLD 9 9 9": "",
+    "Untitled Project": "",
+    "NOTHINGS DIFFERENT ﹤/3": "",
+    "Goodbye & Good Riddance": "",
+    "Evil Twins": "",
+    "WRLD ON DRUGS": "",
+    "Death Race for Love": "",
+    "The Outsiders": "",
+    "Posthumous": ""
+  }
+}

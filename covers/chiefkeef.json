@@ -1,0 +1,35 @@
+{
+  "instructions": "Paste a direct image URL after each era name - one that ends in .jpg, .png or .webp, not a link to a page. Leave an era blank to keep the player's generated cover. Save this file as cover-links-chiefkeef.json next to index.html.",
+  "artist": "Chief Keef",
+  "erasTotal": 13,
+  "erasStillNeedingArt": [
+    "Wiiic City",
+    "Drill",
+    "Finally Rich",
+    "Lean",
+    "Rehab",
+    "Xanax",
+    "Cappin",
+    "Turbo",
+    "Glory University",
+    "Underwater",
+    "Almighty So 2 [V1]",
+    "4NEM",
+    "Almighty So 2 [V2]"
+  ],
+  "covers": {
+    "Wiiic City": "",
+    "Drill": "",
+    "Finally Rich": "",
+    "Lean": "",
+    "Rehab": "",
+    "Xanax": "",
+    "Cappin": "",
+    "Turbo": "",
+    "Glory University": "",
+    "Underwater": "",
+    "Almighty So 2 [V1]": "",
+    "4NEM": "",
+    "Almighty So 2 [V2]": ""
+  }
+}

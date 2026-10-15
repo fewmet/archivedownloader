@@ -1,0 +1,37 @@
+{
+  "instructions": "Paste a direct image URL after each era name - one that ends in .jpg, .png or .webp, not a link to a page. Leave an era blank to keep the player's generated cover. Save this file as cover-links-lucki.json next to index.html.",
+  "artist": "Lucki",
+  "erasTotal": 14,
+  "erasStillNeedingArt": [
+    "Lucki Eck$",
+    "Freewave 2",
+    "Watch My Back",
+    "DAYS B4 II EP",
+    "Freewave 3",
+    "Days B4 III",
+    "Almost There",
+    "FLAWLESS LIKE ME [V1]",
+    "WAKE UP LUCKI",
+    "FLAWLESS LIKE ME [V2]",
+    "s*x m*ney dr*gs",
+    "GEMINI!",
+    "dr*gs r bad [V1]",
+    "Dr*gs R Bad [V2]"
+  ],
+  "covers": {
+    "Lucki Eck$": "",
+    "Freewave 2": "",
+    "Watch My Back": "",
+    "DAYS B4 II EP": "",
+    "Freewave 3": "",
+    "Days B4 III": "",
+    "Almost There": "",
+    "FLAWLESS LIKE ME [V1]": "",
+    "WAKE UP LUCKI": "",
+    "FLAWLESS LIKE ME [V2]": "",
+    "s*x m*ney dr*gs": "",
+    "GEMINI!": "",
+    "dr*gs r bad [V1]": "",
+    "Dr*gs R Bad [V2]": ""
+  }
+}

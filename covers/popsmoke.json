@@ -1,0 +1,31 @@
+{
+  "instructions": "Paste a direct image URL after each era name - one that ends in .jpg, .png or .webp, not a link to a page. Leave an era blank to keep the player's generated cover. Save this file as cover-links-popsmoke.json next to index.html.",
+  "artist": "Pop Smoke",
+  "erasTotal": 11,
+  "erasStillNeedingArt": [
+    "GQ",
+    "Meet The Woo 1",
+    "Meet The Woo 2",
+    "PS3",
+    "Collaboration with French Montana",
+    "Huncho Woo",
+    "SFTSAFTM",
+    "SFTSAFTM (Deluxe)",
+    "Boogie",
+    "Faith",
+    "Ongoing"
+  ],
+  "covers": {
+    "GQ": "",
+    "Meet The Woo 1": "",
+    "Meet The Woo 2": "",
+    "PS3": "",
+    "Collaboration with French Montana": "",
+    "Huncho Woo": "",
+    "SFTSAFTM": "",
+    "SFTSAFTM (Deluxe)": "",
+    "Boogie": "",
+    "Faith": "",
+    "Ongoing": ""
+  }
+}

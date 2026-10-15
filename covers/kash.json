@@ -1,0 +1,16 @@
+{
+  "instructions": "Paste a direct image URL after each era name - one that ends in .jpg, .png or .webp, not a link to a page. Leave an era blank to keep the player's generated cover. Save this file as cover-links-kash.json next to index.html.",
+  "artist": "kash",
+  "erasTotal": 6,
+  "erasStillNeedingArt": [
+    "NOTHING TO SOMETHING"
+  ],
+  "covers": {
+    "NOTHING TO SOMETHING": "https://bl-prod-images.azureedge.net/v1.3/albums/b6775449-7d97-48f8-8c59-57fa2efa8c56/1080x1080",
+    "Pre-FOMO": "https://i1.sndcdn.com/artworks-SqlhcKObYDaTnqng-LfQQZA-original.jpg",
+    "FEAR OF MISSING OUT": "https://i1.sndcdn.com/artworks-f1bi9bH34LPrxaKQ-cjoNfw-original.png",
+    "ROOKIE OF THE YEAR": "https://i.ibb.co/rfxmQV5R/ROOKIE-OF-THE-YEAR.png",
+    "LOST IN THE CLUB": "https://a1.mzstatic.com/r40/Music221/v4/5b/8e/f9/5b8ef9c0-af23-4f26-d802-e3c0144416ad/artwork.jpg",
+    "NUMB": "https://i.ibb.co/v4GZFjGB/Untitled305-20260729114419.png"
+  }
+}

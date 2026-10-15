@@ -1,0 +1,29 @@
+{
+  "instructions": "Paste a direct image URL after each era name - one that ends in .jpg, .png or .webp, not a link to a page. Leave an era blank to keep the player's generated cover. Save this file as cover-links-sheffg.json next to index.html.",
+  "artist": "Sheff G",
+  "erasTotal": 10,
+  "erasStillNeedingArt": [
+    "T2MB",
+    "Culkins",
+    "THE UNLUCCY LUCCY KID",
+    "One And Only",
+    "Just 4 Yall",
+    "Proud Of Me Now",
+    "From The Can",
+    "Proud Of Myself",
+    "WE WIN",
+    "Weight On Me"
+  ],
+  "covers": {
+    "T2MB": "",
+    "Culkins": "",
+    "THE UNLUCCY LUCCY KID": "",
+    "One And Only": "",
+    "Just 4 Yall": "",
+    "Proud Of Me Now": "",
+    "From The Can": "",
+    "Proud Of Myself": "",
+    "WE WIN": "",
+    "Weight On Me": ""
+  }
+}

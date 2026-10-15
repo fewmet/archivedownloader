@@ -1,0 +1,39 @@
+{
+  "instructions": "Paste a direct image URL after each era name - one that ends in .jpg, .png or .webp, not a link to a page. Leave an era blank to keep the player's generated cover. Save this file as cover-links-radiohead.json next to index.html.",
+  "artist": "Radiohead",
+  "erasTotal": 15,
+  "erasStillNeedingArt": [
+    "OAF Demos",
+    "Pablo Honey",
+    "The Bends",
+    "OK Computer",
+    "Meeting People Is Easy",
+    "Kid Amnesiac",
+    "Hail To The Thief",
+    "IN RAINBOWS",
+    "The King of Limbs",
+    "A Moon Shaped Pool",
+    "Transitional Period",
+    "I Might Be Wrong",
+    "AMOK",
+    "OKNOTOK 1997 2017",
+    "KID A MNESIA"
+  ],
+  "covers": {
+    "OAF Demos": "",
+    "Pablo Honey": "",
+    "The Bends": "",
+    "OK Computer": "",
+    "Meeting People Is Easy": "",
+    "Kid Amnesiac": "",
+    "Hail To The Thief": "",
+    "IN RAINBOWS": "",
+    "The King of Limbs": "",
+    "A Moon Shaped Pool": "",
+    "Transitional Period": "",
+    "I Might Be Wrong": "",
+    "AMOK": "",
+    "OKNOTOK 1997 2017": "",
+    "KID A MNESIA": ""
+  }
+}

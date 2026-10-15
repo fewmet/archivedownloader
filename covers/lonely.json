@@ -1,0 +1,24 @@
+{
+  "instructions": "Paste a direct image URL after each era name - one that ends in .jpg, .png or .webp, not a link to a page. Leave an era blank to keep the player's generated cover. Save this file as cover-links-lonely.json next to index.html.",
+  "artist": "Destroy Lonely",
+  "erasTotal": 17,
+  "covers": {
+    "2016": "https://i1.sndcdn.com/artworks-O12jO7AyfsYxLeEW-p3Pr2w-t240x240.jpg",
+    "2019": "https://i.imgur.com/nUUfe9M.png",
+    "2020": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRbnDv-QhLYy-Z2niCf-KAY2m40vREZAmwWBZzXvG8XjQ&s=10",
+    "Pre-2016": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcTeEhOsiG6KGA-61j-FXQxv1TpStiakSRyB6bO4KWcY3S8OO4N8",
+    "2017-2018": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRNYq9hI0L45RBUisbiW3KK8SG21jbtXd4CgkVPhohPzx6Q3vrg",
+    "NezzusDestroyed": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-pywacqrDNGr8JOojfaBDZhACeNARiEOJIsxLs232svcNUuV2GsCg6gQ&s=10",
+    "NezzusDestroyed 2": "https://i.iheart.com/v3/url/aHR0cCUzQSUyRiUyRmltYWdlLmloZWFydC5jb20lMkZpaHItaW5nZXN0aW9uLXBpcGVsaW5lLXByb2R1Y3Rpb24tZGlzdHJva2lkJTJGMjAxODA5MDUyMjAwNDAwNzYlMkYxOTMwNzg4Nzc3MjUlMkZyZXNvdXJjZXMlMkYxOTMwNzg4Nzc3MjUuSlBH?ops=fit(480%2C480)",
+    "NO STYLIST [V1]": "https://i.audiomack.com/smk2er/9a0d296c62.webp?width=1000&height=1000",
+    "NO STYLIST [V2]": "https://i.imgur.com/suaGQRE.jpeg",
+    "NO STYLIST [V3]": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRB8dSsB7JICBFHXjUYhnuB_mBEjs9z5S8D1lbteOHK4w0PWoO4Pfsgvg0&s=10",
+    "If Looks Could Kill": "https://i.scdn.co/image/ab67616d0000b2735887b3f4481d39becbebffbc",
+    "LOVE LASTS FOREVER [V1]": "https://i.imgur.com/5qgjIzj.png",
+    "00CACTUS": "https://i.imgur.com/zTtBAvd.png",
+    "LOVE LASTS FOREVER [V2]": "https://i.imgur.com/tAoZFzP.jpeg",
+    "</3³": "https://i.imgur.com/oA8avKi.png",
+    "00Twinz": "https://i.imgur.com/3tvKvwd.png",
+    "Drop Dead Gorgeous": "https://i.imgur.com/94K4wH6.png"
+  }
+}

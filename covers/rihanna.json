@@ -1,0 +1,27 @@
+{
+  "instructions": "Paste a direct image URL after each era name - one that ends in .jpg, .png or .webp, not a link to a page. Leave an era blank to keep the player's generated cover. Save this file as cover-links-rihanna.json next to index.html.",
+  "artist": "Rihanna",
+  "erasTotal": 9,
+  "erasStillNeedingArt": [
+    "A Girl Like Me",
+    "Good Girl Gone Bad",
+    "Rated R",
+    "Loud",
+    "Talk That Talk",
+    "Unapologetic",
+    "ANTI",
+    "R9 [V1]",
+    "R9 [V2]"
+  ],
+  "covers": {
+    "A Girl Like Me": "",
+    "Good Girl Gone Bad": "",
+    "Rated R": "",
+    "Loud": "",
+    "Talk That Talk": "",
+    "Unapologetic": "",
+    "ANTI": "",
+    "R9 [V1]": "",
+    "R9 [V2]": ""
+  }
+}

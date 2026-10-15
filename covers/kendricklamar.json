@@ -1,0 +1,40 @@
+{
+  "instructions": "Paste a direct image URL after each era name - one that ends in .jpg, .png or .webp, not a link to a page. Leave an era blank to keep the player's generated cover. Save this file as cover-links-kendricklamar.json next to index.html.",
+  "artist": "Kendrick Lamar",
+  "erasTotal": 23,
+  "erasStillNeedingArt": [
+    "Collaboration with J. Cole",
+    "Tu Pimp A Caterpillar",
+    "Look Woman",
+    "Everybody Sensitive [V1]",
+    "Mr. Morale [V2]",
+    "Mr. Morale [V3]",
+    "Rap Album",
+    "Compton Cowboys"
+  ],
+  "covers": {
+    "Training Day": "https://i.ibb.co/4McYcND/Training-Day.jpg",
+    "No Sleep 'Til NYC": "https://i.ibb.co/d4kX6Bng/AHOq17-EI6-C3-GUai6he-Tl-RIs0-nz-P1iq5-Ax9n-1t37q-K4pxku-A997-UIn-TY0mav8-YXe-Ewuf-H0e-CTZf72ylm-FEe.jpg",
+    "C4": "https://i.ibb.co/FWCG4C5/C4.jpg",
+    "The Kendrick Lamar EP": "https://i.ibb.co/8XC0LcQ/Kendrick-Lamar-EP.jpg",
+    "Overly Dedicated": "https://a1.mzstatic.com/r40/Music124/v4/b9/e6/e9/b9e6e9e7-6802-cf32-1be7-f668df1ee20d/888915295939_cover.jpg",
+    "Collaboration with J. Cole": "",
+    "Section.80": "https://a1.mzstatic.com/r40/Music115/v4/d7/d3/37/d7d33750-6d28-6e73-4913-7139ebd80906/888915968772_cover.jpg",
+    "good kid, m.A.A.d city": "https://a1.mzstatic.com/r40/Music112/v4/86/d2/5d/86d25d08-2db3-b7f1-d688-96bc78719c28/12UMGIM52989.rgb.jpg",
+    "Tu Pimp A Caterpillar": "",
+    "To Pimp A Butterfly": "https://a1.mzstatic.com/r40/Music112/v4/0d/ae/61/0dae6140-d4af-d0df-eae0-3c92eb392a33/15UMGIM11922.rgb.jpg",
+    "DAMN.": "https://a1.mzstatic.com/r40/Music112/v4/86/c9/bb/86c9bb30-fe3d-442e-33c1-c106c4d23705/17UMGIM88776.rgb.jpg",
+    "Black Panther: The Album": "https://a1.mzstatic.com/r40/Music112/v4/0f/7c/f9/0f7cf9a6-651f-53ae-e374-6be14630bfae/18UMGIM00001.rgb.jpg",
+    "Look Woman": "",
+    "Everybody Sensitive [V1]": "",
+    "Mr. Morale [V2]": "",
+    "Mr. Morale [V3]": "",
+    "Drake vs. Kendrick Lamar": "https://i.ibb.co/LDZQ1Sq3/24-UMGIM50373-rgb.jpg",
+    "GNX": "https://i.ibb.co/JjgG151f/24-UM1-IM28978-rgb.jpg",
+    "Rap Album": "",
+    "Compton Cowboys": "",
+    "Y.H.N.I.C.": "https://i.ibb.co/RBDrKXS/Y-N-I-C.jpg",
+    "untitled unmastered.": "https://a1.mzstatic.com/r40/Music122/v4/93/89/2e/93892e3d-6471-64eb-ee80-c42b95b53d29/16UMGIM10770.rgb.jpg",
+    "Mr. Morale & The Big Steppers": "https://a1.mzstatic.com/r40/Music122/v4/f6/65/b5/f665b52b-8d6d-b94d-cc2c-db826e35304e/22UMGIM52376.rgb.jpg"
+  }
+}

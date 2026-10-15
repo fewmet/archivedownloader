@@ -1,0 +1,25 @@
+{
+  "instructions": "Paste a direct image URL after each era name - one that ends in .jpg, .png or .webp, not a link to a page. Leave an era blank to keep the player's generated cover. Save this file as cover-links-edwardskeletrix.json next to index.html.",
+  "artist": "Edward Skeletrix",
+  "erasTotal": 8,
+  "erasStillNeedingArt": [
+    "Edward Skeletrix",
+    "Skeletrix Language",
+    "SKELETRIX ISLVND RVDIX 66.7",
+    "Museum Music",
+    "Body Of Work [V1]",
+    "Body Of Work [V2]",
+    "Ongoing",
+    "Skeletrix Island Radio 66.7"
+  ],
+  "covers": {
+    "Edward Skeletrix": "",
+    "Skeletrix Language": "",
+    "SKELETRIX ISLVND RVDIX 66.7": "",
+    "Museum Music": "",
+    "Body Of Work [V1]": "",
+    "Body Of Work [V2]": "",
+    "Ongoing": "",
+    "Skeletrix Island Radio 66.7": ""
+  }
+}
