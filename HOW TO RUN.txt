@@ -1,8 +1,10 @@
 ARCHIVEDOWNLOADER - how to run it
 
-archivedownloader is a Yeat port of The Ultimate Uzi Archive
+archivedownloader is a port of The Ultimate Uzi Archive
 (https://uziarchive.top), the Lil Uzi Vert archive run by @flexbymistake.
-The idea and design are theirs. This is just remade for Yeat.
+The idea and design are theirs. This is just remade to work with other
+artists' trackers. Pick an artist in the bar at the top, or use
+"+ Any tracker" to paste the link to any other artist's tracker.
 
 
 1. Unzip the folder somewhere (Desktop or Documents is fine).
@@ -52,5 +54,6 @@ Original site and design: The Ultimate Uzi Archive, https://uziarchive.top
   site creator) and Overlord (@wrldoverlord)
 Yeat song data: the Yeat Trackër, edited by raglord, red., shock,
   Snarke and zamfir
+Other artists: their own trackers, credited on each artist's Credits page
 None of them make or run this port, so don't send them problems
 with it. The site has a Credits page with all of this too.

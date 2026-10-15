@@ -1,7 +1,7 @@
 {
   "name": "archivedownloader",
-  "version": "1.2.0",
-  "description": "A Yeat port of The Ultimate Uzi Archive (uziarchive.top) by @flexbymistake",
+  "version": "2.0.0",
+  "description": "A port of The Ultimate Uzi Archive (uziarchive.top) by @flexbymistake, for any artist tracker",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

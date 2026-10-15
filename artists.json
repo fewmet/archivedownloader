@@ -1,0 +1,354 @@
+{
+ "_readme": "The built-in artists, in the order they show in the artist bar. key = the address (/uzi), sheetId = the Google Sheet id (or site for trackers that are their own website), accent = the artist's colour. credits overrides the editors listed on the Credits page (otherwise they come from TrackerHub). Era covers you add by hand go in covers/<key>.json.",
+ "defaultArtist": "yeat",
+ "artists": [
+  {
+   "key": "yeat",
+   "name": "Yeat",
+   "sheetId": "1FUzAZyTCgFTVxQ--qbCAS2bUk4dsAw6ASxwjURPHbyI",
+   "accent": "#c6f432",
+   "fallbackTabs": {
+    "unreleased": "1241081326",
+    "released": "1617341558"
+   },
+   "credits": [
+    "raglord",
+    "red.",
+    "shock",
+    "Snarke",
+    "zamfir"
+   ],
+   "trackerName": "Yeat Trackër"
+  },
+  {
+   "key": "uzi",
+   "name": "Lil Uzi Vert",
+   "sheetId": "1zqqdIds1iwnx4lh29iF1IlraeuqfGhxH9qLNlWOnryo",
+   "accent": "#b48cff",
+   "fallbackTabs": {
+    "unreleased": "1160569231",
+    "art": "135971633"
+   }
+  },
+  {
+   "key": "carti",
+   "name": "Playboi Carti",
+   "sheetId": "1Irtfvymu26CShYowLMMfD-rM0o9CJqE6-BBSlYsAaF4",
+   "accent": "#e6e6e6",
+   "fallbackTabs": {
+    "unreleased": "0",
+    "art": "487023460"
+   }
+  },
+  {
+   "key": "ken",
+   "name": "Ken Carson",
+   "sheetId": "1OARID98xCqRaBr8gyQCvI3aD4jKQDGgtedyRaiP_pyo",
+   "accent": "#ff4d5e",
+   "fallbackTabs": {
+    "unreleased": "1367980602",
+    "art": "1908257498"
+   }
+  },
+  {
+   "key": "lonely",
+   "name": "Destroy Lonely",
+   "sheetId": "1J16EyxHqZD4m0VZ6g6SoY_1GC21TU7P2kk9FeteSKvE",
+   "accent": "#e58a4e",
+   "fallbackTabs": {
+    "unreleased": "2018221909"
+   }
+  },
+  {
+   "key": "homixidegang",
+   "name": "Homixide Gang",
+   "sheetId": "15eM2g5vJWJIRl1qRYZoGgbKxUXRqIANRKLykqM7ps2M",
+   "accent": "#c70d00",
+   "fallbackTabs": {
+    "unreleased": "1520634709"
+   }
+  },
+  {
+   "key": "kanye",
+   "name": "Kanye West",
+   "sheetId": "12nGHPPh5dVTfLuBLVQYzC3QgPxKfvp-jgCoNccvEasM",
+   "accent": "#e3c48d",
+   "fallbackTabs": {
+    "unreleased": "199908479",
+    "art": "1659647236"
+   }
+  },
+  {
+   "key": "thug",
+   "name": "Young Thug",
+   "sheetId": "12zc2reK5y8XP6SQhv1ujQtiG9VpJy7yDWwDuE-S-wpc",
+   "accent": "#ffb020",
+   "fallbackTabs": {
+    "unreleased": "0",
+    "art": "171524654"
+   }
+  },
+  {
+   "key": "juicewrld",
+   "name": "Juice WRLD",
+   "sheetId": "1tD3ytt5wPx4zfcefXi5ATeYhIiDaugWjMS46nZrP568",
+   "accent": "#8b93ff",
+   "fallbackTabs": {
+    "unreleased": "0",
+    "art": "973925715"
+   }
+  },
+  {
+   "key": "future",
+   "name": "Future",
+   "sheetId": "1WrsgBEo5pv1eFC8ge6kG-FmSV6eZd_N_9t5HCNir7mk",
+   "accent": "#8fd8ff",
+   "fallbackTabs": {
+    "unreleased": "610753461"
+   }
+  },
+  {
+   "key": "lucki",
+   "name": "Lucki",
+   "sheetId": "1zoRNpy7Lvr-JzPqtQLLWRVVDbgKygpBaDf4cC-Lt6k4",
+   "accent": "#ff7aa8",
+   "fallbackTabs": {
+    "unreleased": "306146520"
+   }
+  },
+  {
+   "key": "summrs",
+   "name": "Summrs",
+   "sheetId": "13yCSXxHCBhNGzO6kBGr_MMmRDNLu9j4X10vn_CSBuG4",
+   "accent": "#4fe3d2",
+   "fallbackTabs": {
+    "unreleased": "306146520"
+   }
+  },
+  {
+   "key": "yachty",
+   "name": "Lil Yachty",
+   "sheetId": "122UuKwiKLuoP36tr8r4WTjOouy2gDJGRUDXCc4uD9lw",
+   "accent": "#ff5ce1",
+   "fallbackTabs": {
+    "unreleased": "0",
+    "art": "1815328837"
+   }
+  },
+  {
+   "key": "xxxtentacion",
+   "name": "XXXTENTACION",
+   "sheetId": "1vMEIba05N8zD2iSh_knAkAMzyrm9rtreu1NJeyNZj0I",
+   "accent": "#5a9ce2",
+   "fallbackTabs": {
+    "unreleased": "1286952088",
+    "released": "1470024127",
+    "art": "1057487983"
+   }
+  },
+  {
+   "key": "skimasktheslumpgod",
+   "name": "Ski Mask the Slump God",
+   "sheetId": "1j7_2JVQ2eyaVA6vEQT89R8XhOXUR8KTJbVgTUm_ZD88",
+   "accent": "#e88802",
+   "fallbackTabs": {
+    "unreleased": "116647059",
+    "released": "1894027004"
+   }
+  },
+  {
+   "key": "trippieredd",
+   "name": "Trippie Redd",
+   "sheetId": "1hZdGFBZmukWGH4IlnH0NJvphwEct2XEMJT_moTFhTvc",
+   "accent": "#ff0000",
+   "fallbackTabs": {
+    "unreleased": "235787845"
+   }
+  },
+  {
+   "key": "lilpeep",
+   "name": "Lil Peep",
+   "sheetId": "1kF3KZUjtwiJxxP0GCXJ0VmX7bA2JdwnKa-j1GCaoeC8",
+   "accent": "#de17c3",
+   "fallbackTabs": {
+    "unreleased": "1214485872",
+    "released": "1922125410"
+   }
+  },
+  {
+   "key": "edwardskeletrix",
+   "name": "Edward Skeletrix",
+   "sheetId": "1CnfVdc37A81ZX7lUs4L-J2JfqaW2z3pbkR2W6dRuFS0",
+   "accent": "#0eb4e1",
+   "fallbackTabs": {
+    "unreleased": "298000351",
+    "released": "1073398179"
+   }
+  },
+  {
+   "key": "gunna",
+   "name": "Gunna",
+   "sheetId": "1P_BA-CIy05lDl9j1H06awxNqvXYJcD-KeBPVdgTO7Eo",
+   "accent": "#b200ff",
+   "fallbackTabs": {
+    "unreleased": "1630289126",
+    "released": "219194829",
+    "art": "79062216"
+   }
+  },
+  {
+   "key": "joji",
+   "name": "Joji",
+   "sheetId": "1FPlWbXnx94y5FODJ2qniLf0BzViNSAmj6Xdfw1ZNwQ4",
+   "accent": "#b91313",
+   "fallbackTabs": {
+    "unreleased": "990933532",
+    "released": "108045339",
+    "art": "1419046321"
+   }
+  },
+  {
+   "key": "kendricklamar",
+   "name": "Kendrick Lamar",
+   "sheetId": "1i4OQglDHiiqMDthqfUFPutGmpZzK7n63LaoWApqhQXI",
+   "accent": "#525252",
+   "fallbackTabs": {
+    "unreleased": "1169728352",
+    "released": "95049489",
+    "art": "1807741861"
+   }
+  },
+  {
+   "key": "osamason",
+   "name": "OsamaSon",
+   "sheetId": "1qbJpawdwnw7IUkZ4FfU3oOF17griNjL59X5z6YFiFlY",
+   "accent": "#cebe0d",
+   "fallbackTabs": {
+    "unreleased": "585347098",
+    "released": "1979018091",
+    "art": "1915251821"
+   }
+  },
+  {
+   "key": "pierrebourne",
+   "name": "Pi'erre Bourne",
+   "sheetId": "10nxKfjzuGTlvieAoDWJ8VcDPj2Jxy1bnNeLxzjLq2i8",
+   "accent": "#a55ae2",
+   "fallbackTabs": {
+    "unreleased": "548968228",
+    "art": "1593876185"
+   }
+  },
+  {
+   "key": "popsmoke",
+   "name": "Pop Smoke",
+   "sheetId": "1-Kd8molYeR1WpmWR81DqmSCGng3g-AVmZfgd752kh3M",
+   "accent": "#0f0cac",
+   "fallbackTabs": {
+    "unreleased": "0",
+    "art": "171524654"
+   }
+  },
+  {
+   "key": "rihanna",
+   "name": "Rihanna",
+   "sheetId": "1HMqjw55sCPUGyI_UBc-JcO881FHzUTX08NvQY9oa61k",
+   "accent": "#715ae2",
+   "fallbackTabs": {
+    "unreleased": "415494178"
+   }
+  },
+  {
+   "key": "sheffg",
+   "name": "Sheff G",
+   "sheetId": "1VsUkKon5S5SA-XVJ8_sgn44ZiodGaawH3GYujbmp8-c",
+   "accent": "#5a95e2",
+   "fallbackTabs": {
+    "unreleased": "1199475919",
+    "art": "1752891152"
+   }
+  },
+  {
+   "key": "denzelcurry",
+   "name": "Denzel Curry",
+   "sheetId": "1Pyi72FNT6KWuQE3g4BmIDCV26HMfKFcE650Duyia43o",
+   "accent": "#5c5c5c",
+   "fallbackTabs": {
+    "unreleased": "788157788",
+    "released": "573566409"
+   }
+  },
+  {
+   "key": "chiefkeef",
+   "name": "Chief Keef",
+   "sheetId": "1oDE9gTnEG7ufPQIOMjLTegfI47qtgNCxngmxxHZL4qA",
+   "accent": "#83e25a",
+   "fallbackTabs": {
+    "unreleased": "1792554832",
+    "released": "766098554"
+   }
+  },
+  {
+   "key": "mfdoom",
+   "name": "MF DOOM",
+   "sheetId": "1zEbzMVXFXzuY4wLdPvdQA23lb3RwCSOKqWtHsllXNk8",
+   "accent": "#448e25",
+   "fallbackTabs": {
+    "unreleased": "1493533867"
+   }
+  },
+  {
+   "key": "nettspend",
+   "name": "Nettspend",
+   "sheetId": "1on69bzqAR5WpR2ZuGGbGoMtltq5yCeXaCK4CJ2KkHcM",
+   "accent": "#fbe7a1",
+   "fallbackTabs": {
+    "unreleased": "887238113",
+    "released": "479822205",
+    "art": "950061290"
+   }
+  },
+  {
+   "key": "radiohead",
+   "name": "Radiohead",
+   "sheetId": "176VMdQqyLmFodWpZLgLqkvup4izKpcQQmBwPFLEw9GM",
+   "accent": "#206680",
+   "fallbackTabs": {
+    "unreleased": "0",
+    "released": "1510699798",
+    "art": "171524654"
+   }
+  },
+  {
+   "key": "tyler",
+   "name": "Tyler, The Creator",
+   "site": "tylertracker.net",
+   "accent": "#e5c46d",
+   "fallbackTabs": {
+    "unreleased": "937104017",
+    "released": "1734736073",
+    "art": "1561502439"
+   }
+  },
+  {
+   "key": "kash",
+   "name": "kash",
+   "sheetId": "1D_TUwPWesZ9vSrqw8C5i2OzttS4a_eBws303gILT-IA",
+   "accent": "#0dffdf",
+   "fallbackTabs": {
+    "unreleased": "1903928500",
+    "art": "1375789260"
+   }
+  },
+  {
+   "key": "xaviersobased",
+   "name": "xaviersobased",
+   "sheetId": "1-YsBGzZVLBw_Dnm1tgndRJoRkPtS5WKW1XmPBbKPcS0",
+   "accent": "#e2875a",
+   "fallbackTabs": {
+    "unreleased": "0",
+    "released": "1510699798"
+   }
+  }
+ ]
+}
