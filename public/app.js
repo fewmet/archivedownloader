@@ -1,5 +1,6 @@
 /* archivedownloader - front end. Plain JS, no build step.
-   A Yeat port of The Ultimate Uzi Archive (uziarchive.top) by @flexbymistake. */
+   A port of The Ultimate Uzi Archive (uziarchive.top) by @flexbymistake,
+   for any artist's tracker. */
 (() => {
   "use strict";
 
@@ -8,6 +9,11 @@
   const PAGE = 60;
 
   const state = {
+    artists: [],           // the built-in list
+    defaultArtist: "yeat",
+    allowCustom: true,
+    artist: null,          // the artist being shown (meta.artist)
+    artistKey: "",
     meta: null,
     eras: new Map(),
     eraList: [],
@@ -79,10 +85,171 @@
     return body;
   }
 
+  /* ---------- artists ---------- */
+
+  // a page address for the artist being shown: "/" for the main one, "/uzi/era/x" for the rest
+  function linkFor(artistKey, path = "/") {
+    if (!artistKey || artistKey === state.defaultArtist) return path;
+    return `/${artistKey}${path === "/" ? "" : path}`;
+  }
+  const L = path => linkFor(state.artistKey, path);
+  const api = path => `/api/a/${encodeURIComponent(state.artistKey)}${path}`;
+
+  const isArtistSegment = segment =>
+    state.artists.some(a => a.key === segment) || /^sheet-[A-Za-z0-9_-]{25,80}$|^site-[a-z0-9.-]+$/.test(segment || "");
+
+  // trackers this visitor added themselves, remembered in this browser only
+  function savedTrackers() {
+    try { return JSON.parse(localStorage.getItem("customTrackers") || "[]").filter(t => t && t.key && t.name); } catch { return []; }
+  }
+  function saveTracker(entry) {
+    const list = savedTrackers().filter(t => t.key !== entry.key);
+    list.unshift({ key: entry.key, name: entry.name });
+    try { localStorage.setItem("customTrackers", JSON.stringify(list.slice(0, 12))); } catch { /* storage blocked */ }
+  }
+  function forgetTracker(key) {
+    try { localStorage.setItem("customTrackers", JSON.stringify(savedTrackers().filter(t => t.key !== key))); } catch { /* storage blocked */ }
+  }
+
+  // an artist colour that still reads on the dark background
+  function readableAccent(color, name) {
+    const hex = String(color || "").match(/^#?([0-9a-f]{6})$/i);
+    if (!hex) return `hsl(${hue(name || "x")} 80% 66%)`;
+    let [r, g, b] = [0, 2, 4].map(i => parseInt(hex[1].slice(i, i + 2), 16));
+    const light = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+    if (light < 0.5) {
+      const mix = Math.min(0.75, (0.55 - light) * 1.6);
+      [r, g, b] = [r, g, b].map(v => Math.round(v + (255 - v) * mix));
+    }
+    return `rgb(${r} ${g} ${b})`;
+  }
+
+  function renderArtistBar() {
+    const saved = savedTrackers().filter(t => !state.artists.some(a => a.key === t.key));
+    const current = state.artistKey;
+    const chip = (key, name, extra = "") =>
+      `<a href="${linkFor(key, "/")}" data-link data-artist="${esc(key)}" ${key === current ? 'aria-current="page"' : ""} ${extra}>${esc(name)}</a>`;
+    // a custom tracker opened from a shared link shows up even before it's saved
+    const unsavedCurrent = current && !state.artists.some(a => a.key === current) && !saved.some(t => t.key === current) && state.artist
+      ? [{ key: current, name: state.artist.name }] : [];
+    $("#artists").innerHTML =
+      state.artists.map(a => chip(a.key, a.name)).join("") +
+      [...unsavedCurrent, ...saved].map(t => chip(t.key, t.name, 'class="custom"')).join("") +
+      (state.allowCustom ? `<button type="button" class="add-btn" data-add-tracker aria-expanded="false">+ Any tracker</button>` : "");
+    const active = $("#artists [aria-current]");
+    if (active) $("#artists").scrollLeft = active.offsetLeft - ($("#artists").clientWidth - active.offsetWidth) / 2;
+  }
+
+  function addTrackerPanel() {
+    const panel = $("#add-tracker");
+    panel.innerHTML = `
+      <form class="add-form" data-add-form>
+        <label for="tracker-link">Paste any artist's tracker link</label>
+        <div class="add-row">
+          <input id="tracker-link" type="text" inputmode="url" autocomplete="off" spellcheck="false"
+            placeholder="https://docs.google.com/spreadsheets/d/...">
+          <button class="btn primary small" type="submit">Open</button>
+        </div>
+        <p class="add-note">Works with Google Sheets trackers that use the usual tracker layout (Unreleased / Released tabs). Only the tabs with songs and files get used; Recent, Best Of, Grails, Tracklists, Key and the rest are left out.</p>
+        <p class="add-status" data-add-status role="status"></p>
+        ${savedTrackers().length ? `<div class="saved"><span>Your trackers</span>${savedTrackers().map(t =>
+          `<span class="saved-item"><a href="${linkFor(t.key, "/")}" data-link>${esc(t.name)}</a><button type="button" data-forget="${esc(t.key)}" aria-label="Remove ${esc(t.name)}">×</button></span>`).join("")}</div>` : ""}
+      </form>`;
+  }
+
+  document.addEventListener("click", event => {
+    if (event.target.closest("[data-add-tracker]")) {
+      const panel = $("#add-tracker");
+      panel.hidden = !panel.hidden;
+      event.target.closest("[data-add-tracker]").setAttribute("aria-expanded", !panel.hidden);
+      if (!panel.hidden) {
+        addTrackerPanel();
+        $("#tracker-link").focus();
+      }
+      return;
+    }
+    const forget = event.target.closest("[data-forget]");
+    if (forget) {
+      forgetTracker(forget.dataset.forget);
+      addTrackerPanel();
+      renderArtistBar();
+    }
+  });
+
+  document.addEventListener("submit", async event => {
+    const form = event.target.closest("[data-add-form]");
+    if (!form) return;
+    event.preventDefault();
+    const link = $("#tracker-link").value.trim();
+    const status = $("[data-add-status]", form);
+    if (!link) return;
+    status.textContent = "Reading the tracker... big ones can take up to a minute.";
+    status.className = "add-status";
+    form.querySelector("button[type=submit]").disabled = true;
+    try {
+      const found = await getJSON(`/api/resolve?link=${encodeURIComponent(link)}`);
+      if (!found.builtIn) saveTracker(found);
+      $("#add-tracker").hidden = true;
+      go(linkFor(found.key, "/"));
+    } catch (err) {
+      status.textContent = err.message;
+      status.className = "add-status error";
+    } finally {
+      form.querySelector("button[type=submit]").disabled = false;
+    }
+  });
+
+  // switches the page over to another artist's tracker
+  async function useArtist(key) {
+    if (state.artistKey === key && state.meta) return;
+    if (state.artistKey !== key) {
+      state.artistKey = key;
+      state.meta = null;
+      state.data = {};
+      state.byId = new Map();
+      state.eras = new Map();
+      state.eraList = [];
+      state.filters = defaultFilters();
+      state.shown = PAGE;
+    }
+    const known = state.artists.find(a => a.key === key) || savedTrackers().find(t => t.key === key);
+    renderArtistBar();
+    $("#tabs").innerHTML = "";
+    view.innerHTML = `<div class="loading">Loading the ${esc(known ? known.name : "")} tracker...${known ? "" : " This can take a moment the first time."}</div>`;
+    const meta = await getJSON(api("/meta"));
+    if (state.artistKey !== key) return;
+    state.meta = meta;
+    state.artist = meta.artist;
+    state.eraList = meta.eras;
+    meta.eras.forEach(era => state.eras.set(era.key, era));
+    document.documentElement.style.setProperty("--accent", readableAccent(meta.artist.accent, meta.artist.name));
+    renderArtistBar();
+    renderFooter();
+  }
+
+  function renderFooter() {
+    const a = state.artist;
+    if (!a) return;
+    $("#foot-credits").innerHTML = `
+      <h2>Credits</h2>
+      <p class="credit-main">archivedownloader is a port of <a href="https://uziarchive.top" target="_blank" rel="noopener"><strong>The Ultimate Uzi Archive</strong></a> (uziarchive.top), the Lil Uzi Vert archive run by <strong>@flexbymistake</strong>. The idea, the layout and the features all come from that site. This is just the same thing remade to work with other artists' trackers. Go use the original.</p>
+      <ul>
+        <li>Original site and design: <a href="https://uziarchive.top" target="_blank" rel="noopener">uziarchive.top</a> by @flexbymistake</li>
+        <li>Song data: the <a href="${esc(a.sheetUrl)}" target="_blank" rel="noopener">${esc(a.trackerName)}</a>${a.credits.length ? `, kept by ${esc(a.credits.join(", "))}` : ""}</li>
+        <li>Files: hosted on pillows.su, pixeldrain, imgur.gg and other file hosts</li>
+      </ul>
+      <p class="credit-note">Everyone who made the original and keeps this tracker is on the <a href="${L("/credits")}" data-link>Credits page</a>. This port isn't made or run by @flexbymistake, so please don't send them problems with it.</p>`;
+    $("#updated").textContent = `${a.trackerName} last synced ${new Date(state.meta.updatedAt).toLocaleString()}`;
+  }
+
   async function loadTab(key) {
     if (state.data[key]) return state.data[key];
-    const items = await getJSON(`/api/tab/${key}`);
+    const artistKey = state.artistKey;
+    const items = await getJSON(api(`/tab/${key}`));
+    if (artistKey !== state.artistKey) throw new Error("switched artist");
     items.forEach(item => {
+      item.artist = artistKey;
+      item.artistName = state.artist.name;
       item.eraObj = state.eras.get(item.era) || null;
       item.hay = fold([item.title, ...item.aliases, ...item.producers, ...item.features,
         item.eraObj ? item.eraObj.name : item.eraName, item.release, item.session, item.group, item.type].join(" "));
@@ -100,11 +267,17 @@
 
   function parseRoute() {
     const parts = location.pathname.split("/").filter(Boolean).map(decodeURIComponent);
-    if (parts[0] === "era" && parts[1]) return { name: "era", era: parts[1], open: new URLSearchParams(location.search).get("song") };
-    if (parts[0] === "song" && parts[1]) return { name: "song", id: parts[1] };
-    if (parts[0] === "tab" && parts[1]) return { name: "tab", tab: parts[1] };
-    if (parts[0] === "credits") return { name: "credits" };
-    return { name: "tab", tab: "songs" };
+    const artist = isArtistSegment(parts[0]) ? parts.shift() : state.defaultArtist;
+    const route = (() => {
+      if (parts[0] === "era" && parts[1]) return { name: "era", era: parts[1], open: new URLSearchParams(location.search).get("song") };
+      if (parts[0] === "song" && parts[1]) return { name: "song", id: parts[1] };
+      if (parts[0] === "tab" && parts[1]) return { name: "tab", tab: parts[1] };
+      if (parts[0] === "credits") return { name: "credits" };
+      if (parts.length) return { name: "missing" };
+      return { name: "tab", tab: "songs" };
+    })();
+    route.artist = artist;
+    return route;
   }
 
   function go(url, { replace = false } = {}) {
@@ -126,8 +299,8 @@
 
   function renderTabs(active) {
     $("#tabs").innerHTML = state.meta.tabs.map(tab =>
-      `<a href="${tab.key === "songs" ? "/" : `/tab/${tab.key}`}" data-link ${tab.key === active ? 'aria-current="page"' : ""}>${esc(tab.label)}</a>`
-    ).join("") + `<a href="/credits" data-link ${active === "credits" ? 'aria-current="page"' : ""}>Credits</a>`;
+      `<a href="${L(tab.key === "songs" ? "/" : `/tab/${tab.key}`)}" data-link ${tab.key === active ? 'aria-current="page"' : ""}>${esc(tab.label)}</a>`
+    ).join("") + `<a href="${L("/credits")}" data-link ${active === "credits" ? 'aria-current="page"' : ""}>Credits</a>`;
     const current = $("#tabs [aria-current]");
     if (current) $("#tabs").scrollLeft = current.offsetLeft - ($("#tabs").clientWidth - current.offsetWidth) / 2;
   }
@@ -232,10 +405,10 @@
     if (state.route.tab !== tab || state.route.name !== "tab") return;
 
     const heading = tab === "songs"
-      ? `The <em>Yeat</em> Archive.`
+      ? `The <em>${esc(state.artist.name)}</em> Archive.`
       : `${esc(tabLabel(tab))}`;
     const lede = tab === "songs"
-      ? `<p class="port-note">A Yeat port of <a href="https://uziarchive.top" target="_blank" rel="noopener">The Ultimate Uzi Archive</a> by @flexbymistake. Their site, their idea and layout, remade for Yeat. <a href="/credits" data-link>Credits</a></p>`
+      ? `<p class="port-note">A port of <a href="https://uziarchive.top" target="_blank" rel="noopener">The Ultimate Uzi Archive</a> by @flexbymistake. Their site, their idea and layout, remade for ${esc(state.artist.name)} using the ${esc(state.artist.trackerName)}. <a href="${L("/credits")}" data-link>Credits</a></p>`
       : `<p class="lede">${items.length.toLocaleString()} entries from the tracker's ${esc(tabLabel(tab))} tab.</p>`;
 
     view.innerHTML = `
@@ -246,7 +419,7 @@
       </section>
       <div id="results"></div>`;
 
-    document.title = tab === "songs" ? "Yeat - archivedownloader" : `${tabLabel(tab)} - archivedownloader`;
+    document.title = tab === "songs" ? `${state.artist.name} - archivedownloader` : `${tabLabel(tab)} - ${state.artist.name} - archivedownloader`;
     bindSearch(tab, items);
     renderResults(tab, items);
   }
@@ -383,7 +556,7 @@
   function eraCard(era) {
     const h = hue(era.name);
     return `
-      <a class="era-card" href="/era/${encodeURIComponent(era.key)}" data-link style="--c:hsl(${h} 70% 40%)">
+      <a class="era-card" href="${L(`/era/${encodeURIComponent(era.key)}`)}" data-link style="--c:hsl(${h} 70% 40%)">
         ${coverHTML(era)}
         <strong>${esc(era.name)}</strong>
         <span class="era-meta">${era.year ? `<span>${era.year}</span>` : ""}<span>${era.counts.total} songs</span></span>
@@ -414,7 +587,7 @@
     const era = item.eraObj;
     const playing = player.current && player.current.id === item.id;
     const smallTag = item.available && item.available !== "Full" ? `<span class="tag">${esc(item.available)}</span>` : "";
-    const eraTag = showEra && era ? `<a class="tag era-tag" style="--h:${hue(era.name)}" href="/era/${encodeURIComponent(era.key)}" data-link>${esc(era.name)}</a>` : "";
+    const eraTag = showEra && era ? `<a class="tag era-tag" style="--h:${hue(era.name)}" href="${L(`/era/${encodeURIComponent(era.key)}`)}" data-link>${esc(era.name)}</a>` : "";
     return `
       <article class="song ${playing ? "playing" : ""}" data-id="${item.id}">
         <div class="song-row" data-toggle>
@@ -461,7 +634,7 @@
       meta("Alt names", item.aliases.join(", ")),
       meta("Length", item.length));
     (item.fields || []).filter(field => field.label !== "Notes").forEach(field => blocks.push(meta(field.label, field.value)));
-    if (item.eraObj) blocks.push(`<div class="meta"><span>Era</span><div><a class="linkish" href="/era/${encodeURIComponent(item.eraObj.key)}" data-link>${esc(item.eraObj.name)}</a></div></div>`);
+    if (item.eraObj) blocks.push(`<div class="meta"><span>Era</span><div><a class="linkish" href="${linkFor(item.artist, `/era/${encodeURIComponent(item.eraObj.key)}`)}" data-link>${esc(item.eraObj.name)}</a></div></div>`);
 
     const notes = item.notes || ((item.fields || []).find(field => field.label === "Notes") || {}).value || "";
     const external = item.links.filter(link => !item.audio || !link.includes("pillows.su"));
@@ -475,7 +648,7 @@
         <div class="detail-actions">
           ${item.audio ? `<button class="btn small" type="button" data-play>▶ Play</button>
             <button class="btn small" type="button" data-queue>Add to queue</button>
-            <a class="btn small" href="/download/${item.id}" download data-dl>Download</a>` : ""}
+            <a class="btn small" href="/download/${encodeURIComponent(item.artist)}/${item.id}" download data-dl>Download</a>` : ""}
           <button class="btn small" type="button" data-share>Share</button>
           <a class="btn small" href="${esc(item.sheet)}" target="_blank" rel="noopener">Open sheet row</a>
         </div>
@@ -511,13 +684,13 @@
         player.enqueue(item);
         return toast("Added to queue");
       }
-      if (event.target.closest("[data-share]")) return copy(`${location.origin}/song/${item.id}`);
+      if (event.target.closest("[data-share]")) return copy(`${location.origin}${linkFor(item.artist, `/song/${item.id}`)}`);
 
       const filter = event.target.closest("[data-filter]");
       if (filter) {
         state.filters = { ...defaultFilters(), [filter.dataset.filter]: filter.dataset.value };
         sessionStorageSet("adv", "1");
-        return go("/");
+        return go(L("/"));
       }
 
       if (event.target.closest("[data-toggle]")) toggleRow(article);
@@ -535,7 +708,7 @@
     if (!era) return renderNotFound();
     renderTabs("songs");
     setEraColor(era);
-    document.title = `${era.name} - archivedownloader`;
+    document.title = `${era.name} - ${state.artist.name} - archivedownloader`;
 
     const songs = (await loadTab("songs")).filter(song => song.era === key);
     // unreleased first in tracker order, released after, like the tracker itself
@@ -547,7 +720,7 @@
     const timeline = era.timeline.length ? `<details><summary>Timeline</summary><ul>${era.timeline.map(t => `<li>${esc(t.replace(/^\(|\)$/g, "").replace(/\) \(/g, " · "))}</li>`).join("")}</ul></details>` : "";
 
     view.innerHTML = `
-      <a class="back" href="/" data-link>← All eras</a>
+      <a class="back" href="${L("/")}" data-link>← All eras</a>
       <section class="era-hero">
         ${coverHTML(era)}
         <div>
@@ -580,7 +753,7 @@
               <span class="zip-count" data-zip-count></span>
               <a class="btn primary small" data-zip-go href="#" download>Download</a>
             </div>
-            <p class="zip-note">Every file is the original upload at its original quality, never converted or re-encoded, with tags added (title, Yeat, era as album, year, track number, producer, cover). The ZIP builds as it downloads, so the browser won't show a total size, and big eras can take a few minutes.</p>
+            <p class="zip-note">Every file is the original upload at its original quality, never converted or re-encoded, with tags added (title, ${esc(state.artist.name)}, era as album, year, track number, producer, cover). The ZIP builds as it downloads, so the browser won't show a total size, and big eras can take a few minutes.</p>
           </div>` : ""}
         </div>
       </section>
@@ -594,7 +767,7 @@
     bindRows($("#era-songs"), list);
     $("[data-era-play]")?.addEventListener("click", () => player.playList(playable, 0));
     $("[data-era-shuffle]")?.addEventListener("click", () => player.playList(playable, 0, { shuffle: true }));
-    $("[data-era-share]").addEventListener("click", () => copy(`${location.origin}/era/${encodeURIComponent(era.key)}`));
+    $("[data-era-share]").addEventListener("click", () => copy(`${location.origin}${L(`/era/${encodeURIComponent(era.key)}`)}`));
     bindZipPanel(era, playable);
 
     if (openId) {
@@ -625,7 +798,7 @@
         (!full.checked || !snippetish.test(song.available || "")) &&
         !seen.has(song.audio.src) && seen.add(song.audio.src));
       count.textContent = `${picked.length} ${picked.length === 1 ? "file" : "files"} + cover + tracklist`;
-      go.href = `/zip/era/${encodeURIComponent(era.key)}?which=${which.value}${full.checked ? "&full=1" : ""}`;
+      go.href = `/zip/${encodeURIComponent(state.artistKey)}/${encodeURIComponent(era.key)}?which=${which.value}${full.checked ? "&full=1" : ""}`;
       go.classList.toggle("disabled", !picked.length);
     };
 
@@ -659,12 +832,12 @@
     if (!item) return renderNotFound("That song isn't on the tracker any more.");
 
     if (songTab(item) === "songs" && item.era) {
-      history.replaceState({}, "", `/era/${encodeURIComponent(item.era)}?song=${item.id}`);
+      history.replaceState({}, "", L(`/era/${encodeURIComponent(item.era)}?song=${item.id}`));
       return renderEra(item.era, item.id);
     }
 
     renderTabs(item.section);
-    view.innerHTML = `<a class="back" href="/tab/${item.section}" data-link>← ${esc(tabLabel(item.section))}</a><div class="songs" id="single" style="margin-top:18px">${songRow(item, { showEra: true })}</div>`;
+    view.innerHTML = `<a class="back" href="${L(`/tab/${item.section}`)}" data-link>← ${esc(tabLabel(item.section))}</a><div class="songs" id="single" style="margin-top:18px">${songRow(item, { showEra: true })}</div>`;
     bindRows($("#single"), [item]);
     toggleRow($("#single .song"), true);
   }
@@ -685,7 +858,7 @@
       <article class="credit-card ${person.lead ? "lead" : ""}">
         <span class="credit-num">${String(index + 1).padStart(2, "0")}</span>
         <div class="credit-body">
-          <h3>${esc(person.name)}</h3>
+          <h3 class="${person.name.length > 13 ? "longer" : person.name.length > 9 ? "long" : ""}">${esc(person.name)}</h3>
           ${person.handle ? `<p class="credit-handle">${esc(person.handle)}</p>` : ""}
           <ul>${person.roles.map(role => `<li>${esc(role)}</li>`).join("")}</ul>
           ${link}
@@ -696,24 +869,23 @@
   function renderCredits() {
     renderTabs("credits");
     setEraColor(null);
-    document.title = "Credits - archivedownloader";
-    const sheetUrl = state.meta ? state.meta.sheetUrl : "https://docs.google.com/spreadsheets/d/1FUzAZyTCgFTVxQ--qbCAS2bUk4dsAw6ASxwjURPHbyI/edit";
+    const a = state.artist;
+    document.title = `Credits - ${a.name} - archivedownloader`;
 
-    // the people who keep the Yeat Trackër up to date
-    const TRACKER_EDITORS = ["raglord", "red.", "shock", "Snarke", "zamfir"];
     const trackerCredits = [
-      { name: "Yeat Trackër", roles: ["Every song, era, date and note on this site", "Era covers"], url: sheetUrl, linkText: "Open the tracker", lead: true },
-      ...TRACKER_EDITORS.map(name => ({ name, roles: ["Yeat Trackër Editor"] }))
+      { name: a.trackerName, roles: ["Every song, era, date and note on this site", "Era covers"], url: a.sheetUrl, linkText: "Open the tracker", lead: true },
+      ...a.credits.map(name => ({ name, roles: [`${a.trackerName} editor`] }))
     ];
     const fileCredits = [
       { name: "pillows.su", roles: ["Hosts most of the song files"], url: "https://pillows.su", linkText: "pillows.su" },
-      { name: "imgur.gg", roles: ["Hosts the Lives and many snippets"], url: "https://imgur.gg", linkText: "imgur.gg" }
+      { name: "imgur.gg", roles: ["Hosts lives and many snippets"], url: "https://imgur.gg", linkText: "imgur.gg" },
+      { name: "pixeldrain", roles: ["Hosts files for some trackers"], url: "https://pixeldrain.com", linkText: "pixeldrain.com" }
     ];
 
     view.innerHTML = `
       <section class="credits-page">
         <h1 class="credits-title">Credits.</h1>
-        <p class="credits-lead">archivedownloader is a port of <a href="https://uziarchive.top" target="_blank" rel="noopener">The Ultimate Uzi Archive</a>, remade for Yeat. The site, the idea, the layout and the features are theirs. These are the people who made it.</p>
+        <p class="credits-lead">archivedownloader is a port of <a href="https://uziarchive.top" target="_blank" rel="noopener">The Ultimate Uzi Archive</a>, remade to work with other artists' trackers. The site, the idea, the layout and the features are theirs. These are the people who made it, and the people who keep the ${esc(a.name)} tracker going.</p>
 
         <div class="panel credits-panel">
           <div class="panel-head">
@@ -726,17 +898,18 @@
 
         <div class="panel credits-panel">
           <div class="panel-head">
-            <h2>The Yeat Trackër</h2>
-            <a class="btn small" href="${esc(sheetUrl)}" target="_blank" rel="noopener">Open the tracker</a>
+            <h2>The ${esc(a.trackerName)}</h2>
+            <a class="btn small" href="${esc(a.sheetUrl)}" target="_blank" rel="noopener">Open the tracker</a>
           </div>
-          <p class="credits-small" style="margin:0 0 16px">Every Yeat song, era, date, note and cover on this site comes from the Yeat Trackër and the people who edit it.</p>
+          <p class="credits-small" style="margin:0 0 16px">Every ${esc(a.name)} song, era, date, note and cover on this page comes from the ${esc(a.trackerName)} and the people who edit it.${a.builtIn && a.key !== state.defaultArtist || !a.builtIn ? " Editors are as listed for this tracker on TrackerHub." : ""}</p>
           <div class="credit-grid">${trackerCredits.map(creditCard).join("")}</div>
+          ${a.credits.length ? "" : `<p class="credits-small">This tracker's editors aren't listed on TrackerHub. Open the tracker to see who keeps it.</p>`}
         </div>
 
         <div class="panel credits-panel">
           <div class="panel-head"><h2>Files</h2></div>
           <div class="credit-grid">${fileCredits.map(creditCard).join("")}</div>
-          <p class="credits-small">This site doesn't host or store any music. It lists what the Yeat Trackër lists and links to where the files already are.</p>
+          <p class="credits-small">This site doesn't host or store any music. It lists what each tracker lists and links to where the files already are.</p>
         </div>
       </section>`;
     window.scrollTo(0, 0);
@@ -744,14 +917,17 @@
 
   function renderNotFound(message = "That page doesn't exist.") {
     renderTabs("");
-    view.innerHTML = `<p class="empty">${esc(message)} <a href="/" data-link>Back to the archive</a></p>`;
+    view.innerHTML = `<p class="empty">${esc(message)} <a href="${L("/")}" data-link>Back to the archive</a></p>`;
   }
 
   async function render() {
     state.route = parseRoute();
     const route = state.route;
     try {
-      if (route.name === "era") await renderEra(route.era, route.open);
+      await useArtist(route.artist);
+      if (state.route !== route) return;
+      if (route.name === "missing") renderNotFound();
+      else if (route.name === "era") await renderEra(route.era, route.open);
       else if (route.name === "song") await renderSong(route.id);
       else if (route.name === "credits") renderCredits();
       else {
@@ -759,8 +935,9 @@
         await renderTab(route.tab);
       }
     } catch (err) {
+      if (err.message === "switched artist" || state.route !== route) return;
       console.error(err);
-      view.innerHTML = `<p class="empty">Couldn't load the tracker: ${esc(err.message)}. Refresh to try again.</p>`;
+      view.innerHTML = `<div class="empty"><p>Couldn't load this tracker: ${esc(err.message)}</p><p><a href="/" data-link>Back to the main archive</a></p></div>`;
     }
     markPlaying();
   }
@@ -927,7 +1104,7 @@
     ui.repeat.setAttribute("aria-pressed", player.repeat);
   });
   $("#now").addEventListener("click", () => {
-    if (player.current) go(`/song/${player.current.id}`);
+    if (player.current) go(linkFor(player.current.artist, `/song/${player.current.id}`));
   });
 
   try {
@@ -996,7 +1173,7 @@
     const era = item.eraObj;
     navigator.mediaSession.metadata = new MediaMetadata({
       title: item.title,
-      artist: ["Yeat", ...item.features.map(f => f.replace(/^(feat\.?|with|ft\.?)\s*/i, ""))].join(", "),
+      artist: [item.artistName || "", ...item.features.map(f => f.replace(/^(feat\.?|with|ft\.?)\s*/i, ""))].join(", "),
       album: era ? era.name : (item.eraName || ""),
       artwork: era && era.cover ? [{ src: era.cover, sizes: "512x512" }] : []
     });
@@ -1012,17 +1189,16 @@
   /* ---------- start ---------- */
 
   async function start() {
-    view.innerHTML = '<div class="loading">Loading the tracker...</div>';
+    view.innerHTML = '<div class="loading">Loading...</div>';
     try {
-      state.meta = await getJSON("/api/meta");
+      const list = await getJSON("/api/artists");
+      state.artists = list.artists;
+      state.defaultArtist = list.defaultArtist;
+      state.allowCustom = list.allowCustom;
     } catch (err) {
-      view.innerHTML = `<p class="empty">Couldn't reach the tracker: ${esc(err.message)}. Refresh in a minute.</p>`;
+      view.innerHTML = `<p class="empty">Couldn't reach the site: ${esc(err.message)}. Refresh in a minute.</p>`;
       return;
     }
-    state.eraList = state.meta.eras;
-    state.eraList.forEach(era => state.eras.set(era.key, era));
-    $("#sheet-link").href = state.meta.sheetUrl;
-    $("#updated").textContent = `Tracker last synced ${new Date(state.meta.updatedAt).toLocaleString()}`;
     render();
   }
 

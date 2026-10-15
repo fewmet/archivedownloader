@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Yeat - archivedownloader</title>
-  <meta name="description" content="A Yeat port of The Ultimate Uzi Archive (uziarchive.top). Every Yeat song on the tracker, sorted by era, playable and downloadable with tags.">
+  <title>archivedownloader</title>
+  <meta name="description" content="A port of The Ultimate Uzi Archive (uziarchive.top) for any artist's tracker. Every song on the tracker, sorted by era, playable and downloadable with tags.">
   <meta name="theme-color" content="#060607">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,22 +20,15 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v10.5"/><path d="m7.5 9.5 4.5 4.5 4.5-4.5"/><path d="M4.5 15v3.5a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V15"/></svg>
     </a>
     <a class="brand" href="/" data-link>archivedownloader</a>
+    <nav class="artists" id="artists" aria-label="Artists"></nav>
+    <section class="add-tracker" id="add-tracker" hidden></section>
     <nav class="tabs" id="tabs" aria-label="Sections"></nav>
   </header>
 
   <main id="view" tabindex="-1"></main>
 
   <footer class="site-foot" id="credits">
-    <section class="credits">
-      <h2>Credits</h2>
-      <p class="credit-main">archivedownloader is a port of <a href="https://uziarchive.top" target="_blank" rel="noopener"><strong>The Ultimate Uzi Archive</strong></a> (uziarchive.top), the Lil Uzi Vert archive run by <strong>@flexbymistake</strong>. The idea, the layout and the features all come from that site. This is just the same thing remade to work with the Yeat tracker. Go use the original.</p>
-      <ul>
-        <li>Original site and design: <a href="https://uziarchive.top" target="_blank" rel="noopener">uziarchive.top</a> by @flexbymistake</li>
-        <li>Song data: the <a id="sheet-link" href="https://docs.google.com/spreadsheets/d/1FUzAZyTCgFTVxQ--qbCAS2bUk4dsAw6ASxwjURPHbyI/edit" target="_blank" rel="noopener">Yeat Trackër</a>, edited by raglord, red., shock, Snarke and zamfir</li>
-        <li>Files: hosted on pillows.su and imgur.gg</li>
-      </ul>
-      <p class="credit-note">Everyone who made the original and edits the tracker is on the <a href="/credits" data-link>Credits page</a>. This port isn't made or run by @flexbymistake, so please don't send them problems with it.</p>
-    </section>
+    <section class="credits" id="foot-credits"></section>
     <p>This site doesn't host or store any music. It only lists what the tracker lists and links out to it. All music, artwork and trademarks belong to their owners.</p>
     <p class="updated" id="updated"></p>
   </footer>
