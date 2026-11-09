@@ -35,9 +35,9 @@ From a terminal you can also run `node server.js`. If port 3000 is taken it move
 ## How a tracker is read (`tracker.js`)
 
 - Everything comes from the sheet's published HTML view, not the CSV export. That still works on trackers that turned off downloading (Uzi, Ken Carson, Juice WRLD, OsamaSon and others), keeps hyperlinks, and shows pictures pasted into cells (where era covers live).
-- The tab list is read from the sheet, and only tabs with songs or files are used: Unreleased and Released (together they're the Songs page), Art (for covers), and when the tracker has them Snippets, Stems, Lives, Music Videos, Performances, Samples and Misc (shown as Extras). Recent, Best Of, Special, Grails, Wanted, Worst Of, Tracklists, Key, Fakes, Groupbuys, Socials, Album Copies, templates and the like are left out on purpose: they're filtered copies of Unreleased or not songs. A tab that ends up with nothing to open is dropped too.
+- The tab list is read from the sheet, and only tabs with songs or files are used: Unreleased and Released (together they're the Songs page), and when the tracker has them Snippets, Stems, Lives, Music Videos, Performances, Samples and Misc (shown as Extras). Recent, Best Of, Special, Grails, Wanted, Worst Of, Art, Tracklists, Key, Fakes, Groupbuys, Socials, Album Copies, templates and the like are left out on purpose: they're filtered copies of Unreleased or not songs. A tab that ends up with nothing to open is dropped too.
 - Columns are found by their header name, not position, because they move around between trackers (Era / Rec. Era / Album, Available Length / Portion / Availability, Link(s) / Links / Main Links / Download(s) / Source, and so on).
-- Era heading rows are recognised by the tally formula, the "℗ year" line, the era picture, or a timeline in the notes. Era covers come from the picture in each era's heading, then `covers/<artist>.json`, then the Art tab.
+- Era heading rows are recognised by the tally formula, the "℗ year" line, the era picture, or a timeline in the notes. Era covers come only from the picture in each era's own row on the song tabs. A heading that is just a picture gives its cover to the era named by the songs under it. Art tabs and hand-added links are never used, and an era with no picture in its row shows its name instead.
 - Playable files: pillows.su, pixeldrain (old and new links), catbox, imgur.gg, exoshare and Google Drive. krakenfiles and music.froste.lol only give download pages, so those songs show as unplayable.
 
 ## Downloads and tagging
@@ -47,10 +47,6 @@ From a terminal you can also run `node server.js`. If port 3000 is taken it move
 - MP3 gets ID3v2.3, Ogg/Opus gets Vorbis comments, FLAC gets a comment block and picture, WAV gets an ID3 chunk. M4A is passed through untagged.
 - The era ZIP lets you pick everything / unreleased only / released only, and skip snippets and partials. It also has the cover and a `tracklist.txt`.
 - Downloads pass through the server, so on a hosted copy they use the server's bandwidth.
-
-## Era covers you add by hand
-
-`covers/<artist key>.json` (copied from tracker-player's cover-links files) maps era names to image links. A link there beats the Art tab. Discord attachment links expire, so they're tried last.
 
 ## Settings (environment variables)
 

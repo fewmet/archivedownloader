@@ -54,15 +54,6 @@ const registry = JSON.parse(fs.readFileSync(ARTIST_FILE, "utf8"));
 const BUILT_IN = new Map(registry.artists.map(artist => [artist.key, artist]));
 const DEFAULT_ARTIST = process.env.DEFAULT_ARTIST || registry.defaultArtist || registry.artists[0].key;
 
-function readCovers(key) {
-  try {
-    const data = JSON.parse(fs.readFileSync(path.join(__dirname, "covers", `${key}.json`), "utf8"));
-    return data.covers || data;
-  } catch {
-    return {};
-  }
-}
-
 const sourceOf = artist => (artist.site ? { site: artist.site } : { sheetId: artist.sheetId });
 
 // a built-in artist whose tracker is the same sheet someone pasted
@@ -157,8 +148,7 @@ async function buildArtist(def) {
   const data = await tracker.loadTracker({
     artistKey: def.key,
     source: def.source,
-    fallbackTabs: def.fallbackTabs || {},
-    manualCovers: def.builtIn ? readCovers(def.key) : {}
+    fallbackTabs: def.fallbackTabs || {}
   });
 
   const info = await hubInfo(def.source).catch(() => null);
@@ -422,24 +412,8 @@ async function eraCover(artistKey, era) {
   if (!era) return null;
   const id = `${artistKey}/${era.key}`;
   if (coverCache.has(id)) return coverCache.get(id);
-  let found = null;
-  for (const link of era.covers || []) {
-    try {
-      if (link.startsWith("/cover/")) {
-        const image = await sheetCoverImage(artistKey, era);
-        if (image && /^image\/(jpeg|png)$/.test(image.type)) { found = { mime: image.type, image: image.body }; break; }
-        continue;
-      }
-      if (!safeRemote(link)) continue;
-      const response = await fetch(link, { signal: AbortSignal.timeout(15000) });
-      const mime = (response.headers.get("content-type") || "").split(";")[0].trim().toLowerCase();
-      if (!response.ok || !/^image\/(jpeg|jpg|png)$/.test(mime)) continue;
-      const image = Buffer.from(await response.arrayBuffer());
-      if (!image.length || image.length > 8 * 1024 * 1024) continue;
-      found = { mime: mime === "image/jpg" ? "image/jpeg" : mime, image };
-      break;
-    } catch { /* next one */ }
-  }
+  const image = await sheetCoverImage(artistKey, era).catch(() => null);
+  const found = image && /^image\/(jpeg|png)$/.test(image.type) ? { mime: image.type, image: image.body } : null;
   if (coverCache.size > 200) coverCache.clear();
   coverCache.set(id, found);
   return found;

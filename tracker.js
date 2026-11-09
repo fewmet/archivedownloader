@@ -13,6 +13,8 @@
       Juice WRLD, OsamaSon and others block the CSV export)
     - it keeps hyperlinks, so a cell that just says "Link" still gives the URL
     - it shows the pictures pasted into cells, which is where era covers live
+      (an era's cover is only ever the picture in its own row on a song tab;
+      Art tabs aren't read at all)
   A few trackers run their own site that serves that same HTML (tylertracker.net);
   those work the same way.
 */
@@ -264,7 +266,6 @@ function parseTabList(html) {
 const TAB_RULES = [
   ["unreleased", /^unreleased\b/],
   ["released", /^released\b/],
-  ["art", /^(cover )?art\b|^art ?\/ ?images/],
   ["snippets", /snippets/],
   ["stems", /^stems|sessions (&|and) stems|^misc \+ stems|stems ?\/ ?sessions/],
   ["lives", /^(instagram|ig) lives|^lives\b/],
@@ -554,22 +555,7 @@ function eraHeaderInfo(row, cols) {
   };
 }
 
-function eraNamesInCell(cell) {
-  const lines = clean(cell).split("\n").map(line => line.trim()).filter(Boolean);
-  if (!lines.length) return [];
-  const names = [lines[0]];
-  const trimmed = lines[0].replace(/\s*\(.*$/, "").trim();
-  if (trimmed && trimmed !== lines[0]) names.push(trimmed);
-  lines.forEach(line => {
-    const inside = line.match(/^\((.+)\)$/);
-    if (!inside) return;
-    inside[1].split(",").forEach(alias => {
-      const name = alias.trim();
-      if (name && name.length <= 60 && !/^(prod|feat|with|collaboration)\b/i.test(name)) names.push(name);
-    });
-  });
-  return names;
-}
+const IMAGE_REACH = 8; // how many rows below a heading its picture can still reach
 
 // "=w105-h104" is the thumbnail the cell shows; a plain width gets a proper cover
 const atCoverSize = url => String(url || "").replace(/=[swh]\d+(-[hw]\d+)?(-[a-z0-9]+)*$/i, "") + "=w600";
@@ -607,11 +593,10 @@ function classifyRow(row, cols) {
 
 /* ---------- building an artist's data ---------- */
 
-function buildSongs({ artistKey, unreleased, released, art, editUrl, manualCovers }) {
+function buildSongs({ artistKey, unreleased, released, editUrl }) {
   const eras = new Map();
   const eraOrder = [];
   const songs = [];
-  const headerImages = new Map(); // looseKey -> google image url
   let creatingLate = false;
 
   // a heading names its own era (exact); a song row may use one of the era's other names
@@ -628,17 +613,13 @@ function buildSongs({ artistKey, unreleased, released, art, editUrl, manualCover
     while (eraOrder.some(era => era.key === slug)) slug += "-2";
     const era = {
       key: slug, name: firstLine(name), aliases: [], year: null, label: "",
-      timeline: [], description: "", releasedAs: [], late: creatingLate
+      timeline: [], description: "", releasedAs: [], late: creatingLate,
+      headed: false, ownImage: "", bareImage: "", imageAbove: "", imageFrom: ""
     };
     eras.set(key, era);
     eraOrder.push(era);
     return era;
   }
-
-  const addImage = (name, url) => {
-    const key = looseKey(name);
-    if (key && url && !headerImages.has(key)) headerImages.set(key, atCoverSize(url));
-  };
 
   function readSongTab(tab, section) {
     if (!tab || !tab.rows.length) return;
@@ -650,11 +631,18 @@ function buildSongs({ artistKey, unreleased, released, art, editUrl, manualCover
     let currentEra = null;
     let session = "";
     let pendingImage = "";
+    let pendingFrom = -1;
+    let pendingBare = false;
+    const holdImage = (image, index, bare) => { pendingImage = image; pendingFrom = index; pendingBare = bare; };
 
     tab.rows.forEach((row, index) => {
       if (index <= headerRow) return;
       const kind = classifyRow(row, cols);
-      if (kind === "empty" || kind === "junk") return;
+      if (kind === "empty" || kind === "junk") {
+        // a heading that is only a picture, with the era's name on the songs below it
+        if (row.image) holdImage(row.image, index, true);
+        return;
+      }
 
       if (kind === "era") {
         const info = eraHeaderInfo(row, cols);
@@ -666,12 +654,9 @@ function buildSongs({ artistKey, unreleased, released, art, editUrl, manualCover
         if (info.label && !era.label) era.label = info.label;
         if (info.timeline.length && !era.timeline.length) era.timeline = info.timeline;
         if (info.description && !era.description) era.description = info.description;
-        if (row.image) {
-          eraNamesInCell(headingText(row, cols)).forEach(name => addImage(name, row.image));
-          pendingImage = row.image;
-        } else {
-          pendingImage = "";
-        }
+        era.headed = true;
+        if (row.image && !era.ownImage) era.ownImage = row.image;
+        holdImage(row.image, index, false);
         currentEra = era;
         session = "";
         return;
@@ -685,9 +670,16 @@ function buildSongs({ artistKey, unreleased, released, art, editUrl, manualCover
       const eraCell = get(row, cols.era);
       const era = (eraCell && !TALLY.test(eraCell) && !BAD_ERA.test(firstLine(eraCell)) ? eraFor(eraCell) : null) || currentEra;
       if (!era) return;
-      // songs under a picture-only heading still file under their own era name
+      // the songs under a heading can file themselves under another name than the
+      // heading shows, so the era those songs name gets the heading's picture
+      if (pendingImage && index - pendingFrom > IMAGE_REACH) pendingImage = "";
       if (pendingImage && eraCell) {
-        eraNamesInCell(eraCell).forEach(name => addImage(name, pendingImage));
+        if (pendingBare) {
+          if (!era.bareImage) era.bareImage = pendingImage;
+        } else if (!era.imageAbove) {
+          era.imageAbove = pendingImage;
+          era.imageFrom = currentEra ? currentEra.key : "";
+        }
         pendingImage = "";
       }
 
@@ -740,46 +732,15 @@ function buildSongs({ artistKey, unreleased, released, art, editUrl, manualCover
   creatingLate = true;
   readSongTab(released, "released");
 
-  // covers from the Art tab: pictures in cells, and direct image links
-  const artLinks = new Map();
-  if (art && art.rows.length) {
-    const headerRow = findHeaderRow(art.rows);
-    const cols = headerRow >= 0 ? mapColumns(art.rows[headerRow].cells) : { era: 0, name: 1, links: [], labels: [] };
-    const typeCol = cols.labels ? cols.labels.findIndex(label => /^(project type|type|art type)$/i.test(clean(label))) : -1;
-    art.rows.forEach((row, index) => {
-      if (index <= headerRow) return;
-      const eraCell = get(row, cols.era);
-      const nameCell = get(row, cols.name);
-      const names = [...eraNamesInCell(eraCell), ...eraNamesInCell(nameCell)];
-      if (row.image) names.forEach(name => addImage(name, row.image));
-      const type = typeCol >= 0 ? get(row, typeCol).toLowerCase() : "";
-      if (/back|insert|alt|poster|merch|tour/.test(type)) return;
-      const link = row.links.flat().find(url => IMAGE_FILE.test(url) || /i\.ibb\.co|sndcdn\.com|mzstatic\.com|i\.scdn\.co|i\.imgur\.com/.test(url));
-      if (!link || !eraCell) return;
-      const eraKey = looseKey(firstLine(eraCell));
-      // the art named after the era itself is the era's cover
-      if (looseKey(firstLine(nameCell)) === eraKey) artLinks.set(`own:${eraKey}`, link);
-      if (!artLinks.has(eraKey)) artLinks.set(eraKey, link);
-    });
-  }
-
-  const manual = new Map(Object.entries(manualCovers || {})
-    .filter(([, url]) => typeof url === "string" && /^https?:\/\//.test(url))
-    .map(([name, url]) => [looseKey(name), url]));
-  const expiring = url => /cdn\.discordapp\.com|media\.discordapp\.net/i.test(url);
-
   eraOrder.forEach(era => {
-    const keys = [era.name, ...era.aliases].map(looseKey);
-    const sheetImage = keys.map(key => headerImages.get(key)).find(Boolean) || null;
-    const manualLinks = keys.map(key => manual.get(key)).filter(Boolean);
-    era.sheetCover = sheetImage;
-    era.covers = [...new Set([
-      ...(sheetImage ? [`/cover/${artistKey}/${encodeURIComponent(era.key)}`] : []),
-      ...manualLinks.filter(url => !expiring(url)),
-      ...keys.map(key => artLinks.get(`own:${key}`)).filter(Boolean),
-      ...keys.map(key => artLinks.get(key)).filter(Boolean),
-      ...manualLinks.filter(expiring)
-    ])];
+    // the picture in the era's own heading, or a nameless picture heading over its
+    // songs. A heading that spells the era differently ("In The Bedroom, I Confess"
+    // over songs marked "ITBIC") also counts, unless that heading is a real era
+    // with songs of its own, which would make it another era's cover
+    const borrowed = !era.headed && era.imageAbove && !songs.some(song => song.era === era.imageFrom);
+    const image = era.ownImage || era.bareImage || (borrowed ? era.imageAbove : "");
+    era.sheetCover = image ? atCoverSize(image) : null;
+    era.covers = image ? [`/cover/${artistKey}/${encodeURIComponent(era.key)}`] : [];
     era.cover = era.covers[0] || null;
 
     const own = songs.filter(song => song.era === era.key);
@@ -814,7 +775,7 @@ function buildSongs({ artistKey, unreleased, released, art, editUrl, manualCover
     ordered.splice(at < 0 ? ordered.length : at + 1, 0, era);
   });
 
-  ordered.forEach(era => { delete era.late; });
+  ordered.forEach(era => { delete era.late; delete era.headed; delete era.ownImage; delete era.bareImage; delete era.imageAbove; delete era.imageFrom; });
   return { eras: ordered.filter(era => era.counts.total), songs };
 }
 
@@ -898,7 +859,7 @@ const SECTION_ORDER = Object.keys(SECTION_LABELS);
     source        { sheetId } or { site }
     fallbackTabs  gids to use if the tab list can't be read
 */
-async function loadTracker({ artistKey, source, fallbackTabs = {}, manualCovers = {}, log = console.log }) {
+async function loadTracker({ artistKey, source, fallbackTabs = {}, log = console.log }) {
   const started = Date.now();
   const urls = sourceUrls(source);
 
@@ -944,9 +905,7 @@ async function loadTracker({ artistKey, source, fallbackTabs = {}, manualCovers 
     artistKey,
     unreleased: tabs.unreleased,
     released: tabs.released,
-    art: tabs.art,
-    editUrl: urls.edit,
-    manualCovers
+    editUrl: urls.edit
   });
 
   if (!songs.length) throw new Error("No songs could be read from this tracker. Its layout may be too different from the usual tracker template.");

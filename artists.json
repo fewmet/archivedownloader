@@ -1,5 +1,5 @@
 {
- "_readme": "The built-in artists, in the order they show in the artist bar. key = the address (/uzi), sheetId = the Google Sheet id (or site for trackers that are their own website), accent = the artist's colour. credits overrides the editors listed on the Credits page (otherwise they come from TrackerHub). Era covers you add by hand go in covers/<key>.json.",
+ "_readme": "The built-in artists, in the order they show in the artist bar. key = the address (/uzi), sheetId = the Google Sheet id (or site for trackers that are their own website), accent = the artist's colour. credits overrides the editors listed on the Credits page (otherwise they come from TrackerHub). Era covers come only from the pictures in each era's row on the song tabs.",
  "defaultArtist": "yeat",
  "artists": [
   {
@@ -26,8 +26,7 @@
    "sheetId": "1zqqdIds1iwnx4lh29iF1IlraeuqfGhxH9qLNlWOnryo",
    "accent": "#b48cff",
    "fallbackTabs": {
-    "unreleased": "1160569231",
-    "art": "135971633"
+    "unreleased": "1160569231"
    }
   },
   {
@@ -36,8 +35,7 @@
    "sheetId": "1Irtfvymu26CShYowLMMfD-rM0o9CJqE6-BBSlYsAaF4",
    "accent": "#e6e6e6",
    "fallbackTabs": {
-    "unreleased": "0",
-    "art": "487023460"
+    "unreleased": "0"
    }
   },
   {
@@ -46,8 +44,7 @@
    "sheetId": "1OARID98xCqRaBr8gyQCvI3aD4jKQDGgtedyRaiP_pyo",
    "accent": "#ff4d5e",
    "fallbackTabs": {
-    "unreleased": "1367980602",
-    "art": "1908257498"
+    "unreleased": "1367980602"
    }
   },
   {
@@ -74,8 +71,7 @@
    "sheetId": "12nGHPPh5dVTfLuBLVQYzC3QgPxKfvp-jgCoNccvEasM",
    "accent": "#e3c48d",
    "fallbackTabs": {
-    "unreleased": "199908479",
-    "art": "1659647236"
+    "unreleased": "199908479"
    }
   },
   {
@@ -84,8 +80,7 @@
    "sheetId": "12zc2reK5y8XP6SQhv1ujQtiG9VpJy7yDWwDuE-S-wpc",
    "accent": "#ffb020",
    "fallbackTabs": {
-    "unreleased": "0",
-    "art": "171524654"
+    "unreleased": "0"
    }
   },
   {
@@ -94,8 +89,7 @@
    "sheetId": "1tD3ytt5wPx4zfcefXi5ATeYhIiDaugWjMS46nZrP568",
    "accent": "#8b93ff",
    "fallbackTabs": {
-    "unreleased": "0",
-    "art": "973925715"
+    "unreleased": "0"
    }
   },
   {
@@ -131,8 +125,7 @@
    "sheetId": "122UuKwiKLuoP36tr8r4WTjOouy2gDJGRUDXCc4uD9lw",
    "accent": "#ff5ce1",
    "fallbackTabs": {
-    "unreleased": "0",
-    "art": "1815328837"
+    "unreleased": "0"
    }
   },
   {
@@ -142,8 +135,7 @@
    "accent": "#5a9ce2",
    "fallbackTabs": {
     "unreleased": "1286952088",
-    "released": "1470024127",
-    "art": "1057487983"
+    "released": "1470024127"
    }
   },
   {
@@ -192,8 +184,7 @@
    "accent": "#b200ff",
    "fallbackTabs": {
     "unreleased": "1630289126",
-    "released": "219194829",
-    "art": "79062216"
+    "released": "219194829"
    }
   },
   {
@@ -203,8 +194,7 @@
    "accent": "#b91313",
    "fallbackTabs": {
     "unreleased": "990933532",
-    "released": "108045339",
-    "art": "1419046321"
+    "released": "108045339"
    }
   },
   {
@@ -214,8 +204,7 @@
    "accent": "#525252",
    "fallbackTabs": {
     "unreleased": "1169728352",
-    "released": "95049489",
-    "art": "1807741861"
+    "released": "95049489"
    }
   },
   {
@@ -225,8 +214,7 @@
    "accent": "#cebe0d",
    "fallbackTabs": {
     "unreleased": "585347098",
-    "released": "1979018091",
-    "art": "1915251821"
+    "released": "1979018091"
    }
   },
   {
@@ -235,8 +223,7 @@
    "sheetId": "10nxKfjzuGTlvieAoDWJ8VcDPj2Jxy1bnNeLxzjLq2i8",
    "accent": "#a55ae2",
    "fallbackTabs": {
-    "unreleased": "548968228",
-    "art": "1593876185"
+    "unreleased": "548968228"
    }
   },
   {
@@ -245,8 +232,7 @@
    "sheetId": "1-Kd8molYeR1WpmWR81DqmSCGng3g-AVmZfgd752kh3M",
    "accent": "#0f0cac",
    "fallbackTabs": {
-    "unreleased": "0",
-    "art": "171524654"
+    "unreleased": "0"
    }
   },
   {
@@ -264,8 +250,7 @@
    "sheetId": "1VsUkKon5S5SA-XVJ8_sgn44ZiodGaawH3GYujbmp8-c",
    "accent": "#5a95e2",
    "fallbackTabs": {
-    "unreleased": "1199475919",
-    "art": "1752891152"
+    "unreleased": "1199475919"
    }
   },
   {
@@ -304,8 +289,7 @@
    "accent": "#fbe7a1",
    "fallbackTabs": {
     "unreleased": "887238113",
-    "released": "479822205",
-    "art": "950061290"
+    "released": "479822205"
    }
   },
   {
@@ -315,8 +299,7 @@
    "accent": "#206680",
    "fallbackTabs": {
     "unreleased": "0",
-    "released": "1510699798",
-    "art": "171524654"
+    "released": "1510699798"
    }
   },
   {
@@ -326,8 +309,7 @@
    "accent": "#e5c46d",
    "fallbackTabs": {
     "unreleased": "937104017",
-    "released": "1734736073",
-    "art": "1561502439"
+    "released": "1734736073"
    }
   },
   {
@@ -336,8 +318,7 @@
    "sheetId": "1D_TUwPWesZ9vSrqw8C5i2OzttS4a_eBws303gILT-IA",
    "accent": "#0dffdf",
    "fallbackTabs": {
-    "unreleased": "1903928500",
-    "art": "1375789260"
+    "unreleased": "1903928500"
    }
   },
   {
