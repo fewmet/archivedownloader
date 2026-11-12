@@ -137,6 +137,29 @@ async function fetchText(url, timeout = 60000) {
   return text;
 }
 
+/*
+  Google now and then answers one of a burst of requests with an error, or with
+  a page that has no sheet in it. Taken at face value that leaves a tracker with
+  a tab missing - half its songs and their covers gone until the next refresh -
+  so a page that should hold a table is asked for again before giving up.
+*/
+async function fetchSheetPage(url, { timeout = 60000, needs = /<table\b/i } = {}) {
+  let lastError;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (attempt) await new Promise(resolve => setTimeout(resolve, 800 * attempt));
+    try {
+      const text = await fetchText(url, timeout);
+      if (!needs || needs.test(text)) return text;
+      lastError = new Error("the page came back without a sheet in it");
+    } catch (err) {
+      lastError = err;
+      // a sheet that isn't shared or doesn't exist won't appear by asking again
+      if (/HTTP (400|401|403|404|410)\b/.test(err.message) || /too big/.test(err.message)) break;
+    }
+  }
+  throw lastError;
+}
+
 /* ---------- reading Google's HTML view ---------- */
 
 const HTML_ENTITIES = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", "#39": "'", "#160": " " };
@@ -502,10 +525,15 @@ function pickAudio(links) {
 /* ---------- eras ---------- */
 
 // broken formulas and placeholders that show up where an era name should be
-const BAD_ERA = /^(#(ref|n\/a|value|error|name|div\/0)!?|0|-|n\/a|\?+)$/i;
+// (and the notices trackers keep in that column: Uzi's disclaimer and link count,
+// MF DOOM's "Number of Leaks", Kendrick's bracketed dates)
+const BAD_ERA = /^(#(ref|n\/a|value|error|name|div\/0)!?|0|-|n\/a|\?+|\(.*\)|disclaimer\b.*|\d+ total links|number of .*|# of .*|.{90,})$/i;
 
 // "84 Total Full / 77 OG Files ..." or "7 Mixtape Tracks / 1 Singles ..."
-const TALLY = /\d+\s*(total\b|total full|og files?|full\b|tagged|partial|snippets?|unavailable|((ep|mixtape|album|lp) )?tracks?\b|singles|features|throwaways|songs?\b|leaked|unleaked|streaming\b)/i;
+// (Tyler's Released tab counts "5 Released / 0 Privated / 1 Deleted" - without
+// those words here, every one of its headings was read as a song in an era
+// called "5 Released", and the real eras under them never got their covers)
+const TALLY = /\d+\s*(total\b|total full|og files?(\(s\))?|full\b|tagged|partial|snippets?|unavailable|((ep|mixtape|album|lp) )?tracks?\b|singles|features|throwaways|songs?\b|leaked|unleaked|streaming\b|released\b|unreleased\b|privated\b|deleted\b)/i;
 
 // the era's name: in the Name column, or wherever the heading row put it
 function headingText(row, cols) {
@@ -558,7 +586,16 @@ function eraHeaderInfo(row, cols) {
 const IMAGE_REACH = 8; // how many rows below a heading its picture can still reach
 
 // "=w105-h104" is the thumbnail the cell shows; a plain width gets a proper cover
-const atCoverSize = url => String(url || "").replace(/=[swh]\d+(-[hw]\d+)?(-[a-z0-9]+)*$/i, "") + "=w600";
+// Only Google's own image addresses take a size on the end. A tracker that runs
+// its own site (tylertracker.net) keeps the pictures there and writes their
+// addresses without the site in front ("/assets/abc.png"); those are already
+// full size, and tacking "=w600" onto one just breaks it.
+function atCoverSize(url, site) {
+  const text = String(url || "").trim();
+  if (text.startsWith("/") && !text.startsWith("//")) return site ? `https://${site}${text}` : "";
+  if (!/^https:\/\/[^/]*google(usercontent)?\.com\//i.test(text)) return text;
+  return text.replace(/=[swh]\d+(-[hw]\d+)?(-[a-z0-9]+)*$/i, "") + "=w600";
+}
 
 /*
   A row is an era heading when it isn't a song: no file link, and either the
@@ -593,7 +630,49 @@ function classifyRow(row, cols) {
 
 /* ---------- building an artist's data ---------- */
 
-function buildSongs({ artistKey, unreleased, released, editUrl }) {
+/*
+  The Art tab, as a fallback only. It lists artwork one row per piece, with the
+  era named in its own column and the picture sitting in the row. An era that
+  has no picture in its own heading on the song tabs takes the first picture the
+  Art tab has under its name - exactly what tracker-player does. An era that
+  does have its own picture never looks here.
+*/
+function artTabCovers(tab, site) {
+  const found = new Map(); // loose era name -> picture address
+  if (!tab || !tab.rows.length) return found;
+
+  const headerRow = findHeaderRow(tab.rows);
+  const cols = headerRow >= 0 ? mapColumns(tab.rows[headerRow].cells) : { era: 0, name: 1 };
+  const eraCol = cols.era >= 0 ? cols.era : 0;
+
+  const namesIn = cell => {
+    const lines = clean(cell).split("\n").map(line => line.trim()).filter(Boolean);
+    if (!lines.length) return [];
+    const names = [lines[0], lines[0].replace(/\s*\(.*$/, "").trim()];
+    lines.forEach(line => {
+      const inside = line.match(/^\((.+)\)$/);
+      if (!inside) return;
+      inside[1].split(",").forEach(alias => {
+        const name = alias.trim();
+        if (name && name.length <= 60 && !/^(prod|feat|with|collaboration)\b/i.test(name)) names.push(name);
+      });
+    });
+    return names.filter(Boolean);
+  };
+
+  tab.rows.forEach((row, index) => {
+    if (index <= headerRow || !row.image) return;
+    const image = atCoverSize(row.image, site);
+    if (!image) return;
+    [...namesIn(row.cells[eraCol]), ...(cols.name >= 0 ? namesIn(row.cells[cols.name]) : [])].forEach(name => {
+      const key = looseKey(name);
+      if (key && !found.has(key)) found.set(key, image);
+    });
+  });
+  return found;
+}
+
+function buildSongs({ artistKey, unreleased, released, editUrl, site, art, handCovers }) {
   const eras = new Map();
   const eraOrder = [];
   const songs = [];
@@ -739,8 +818,21 @@ function buildSongs({ artistKey, unreleased, released, editUrl }) {
     // with songs of its own, which would make it another era's cover
     const borrowed = !era.headed && era.imageAbove && !songs.some(song => song.era === era.imageFrom);
     const image = era.ownImage || era.bareImage || (borrowed ? era.imageAbove : "");
-    era.sheetCover = image ? atCoverSize(image) : null;
-    era.covers = image ? [`/cover/${artistKey}/${encodeURIComponent(era.key)}`] : [];
+    era.sheetCover = (image && atCoverSize(image, site)) || null;
+
+    // the same order tracker-player uses: a link added by hand wins, then the
+    // picture in the era's own row, then - only if there is neither - the Art tab
+    const names = [era.name, ...era.aliases].map(looseKey).filter(Boolean);
+    const lookUp = map => {
+      if (!map) return null;
+      for (const name of names) if (map.has(name)) return map.get(name);
+      return null;
+    };
+    era.handCover = lookUp(handCovers);
+    era.artCover = era.sheetCover ? null : lookUp(art);
+
+    const hasCover = era.handCover || era.sheetCover || era.artCover;
+    era.covers = hasCover ? [`/cover/${artistKey}/${encodeURIComponent(era.key)}`] : [];
     era.cover = era.covers[0] || null;
 
     const own = songs.filter(song => song.era === era.key);
@@ -859,16 +951,37 @@ const SECTION_ORDER = Object.keys(SECTION_LABELS);
     source        { sheetId } or { site }
     fallbackTabs  gids to use if the tab list can't be read
 */
-async function loadTracker({ artistKey, source, fallbackTabs = {}, log = console.log }) {
+async function loadTracker({ artistKey, source, fallbackTabs = {}, handCovers = null, artTab = true, log = console.log }) {
   const started = Date.now();
   const urls = sourceUrls(source);
+
+  /*
+    The tab list has to be read before anything else is known about a tracker,
+    but for the built-in artists the two big tabs are already written down in
+    artists.json. Those start downloading straight away, alongside the list,
+    rather than waiting for it - which takes a round trip to Google off every
+    load. If the list turns out to name a different tab, the early one is
+    simply not used.
+  */
+  const early = new Map(); // gid -> promise of the tab's HTML
+  const fetchTab = address => fetchSheetPage(address);
+  if (!source.site) {
+    Object.values(fallbackTabs).filter(Boolean).forEach(gid => {
+      const promise = fetchTab(urls.tab(String(gid)));
+      promise.catch(() => {}); // looked at later, if at all
+      early.set(String(gid), promise);
+    });
+  }
 
   let title = "";
   let picked = {};
   try {
-    const list = parseTabList(await fetchText(urls.list, 30000));
+    const list = parseTabList(await fetchSheetPage(urls.list, { timeout: 30000, needs: source.site ? null : /gid:\s*"\d+"/ }));
     title = list.title;
     picked = pickTabs(list.tabs);
+    // the Art tab is read too, but only ever as a fallback for covers
+    const art = artTab && list.tabs.find(tab => /^(art|artwork|arts|cover art|art ?work)\b/.test(bareTabName(tab.name)));
+    if (art) picked.art = art;
   } catch (err) {
     log(`[${artistKey}] tab list failed: ${err.message}`);
   }
@@ -891,8 +1004,10 @@ async function loadTracker({ artistKey, source, fallbackTabs = {}, log = console
         const address = source.site && tab.pageUrl && /^\/[\w\/.-]+$/.test(tab.pageUrl)
           ? `https://${source.site}${tab.pageUrl}`
           : urls.tab(tab.gid);
-        const html = await fetchText(address);
-        tabs[key] = { name: tab.name, gid: tab.gid, rows: parseSheetHtml(html) };
+        const html = await (early.get(String(tab.gid)) || fetchTab(address));
+        const rows = parseSheetHtml(html);
+        if (!rows.length) throw new Error("no rows could be read");
+        tabs[key] = { name: tab.name, gid: tab.gid, rows };
       } catch (err) {
         log(`[${artistKey}] ${tab.name} failed: ${err.message}`);
       }
@@ -905,7 +1020,10 @@ async function loadTracker({ artistKey, source, fallbackTabs = {}, log = console
     artistKey,
     unreleased: tabs.unreleased,
     released: tabs.released,
-    editUrl: urls.edit
+    editUrl: urls.edit,
+    site: source.site,
+    art: artTabCovers(tabs.art, source.site),
+    handCovers
   });
 
   if (!songs.length) throw new Error("No songs could be read from this tracker. Its layout may be too different from the usual tracker template.");
@@ -967,6 +1085,7 @@ module.exports = {
   findHeaderRow,
   guessArtistName,
   fetchText,
+  fetchSheetPage,
   looseKey,
   clean,
   firstLine,

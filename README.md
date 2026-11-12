@@ -37,7 +37,8 @@ From a terminal you can also run `node server.js`. If port 3000 is taken it move
 - Everything comes from the sheet's published HTML view, not the CSV export. That still works on trackers that turned off downloading (Uzi, Ken Carson, Juice WRLD, OsamaSon and others), keeps hyperlinks, and shows pictures pasted into cells (where era covers live).
 - The tab list is read from the sheet, and only tabs with songs or files are used: Unreleased and Released (together they're the Songs page), and when the tracker has them Snippets, Stems, Lives, Music Videos, Performances, Samples and Misc (shown as Extras). Recent, Best Of, Special, Grails, Wanted, Worst Of, Art, Tracklists, Key, Fakes, Groupbuys, Socials, Album Copies, templates and the like are left out on purpose: they're filtered copies of Unreleased or not songs. A tab that ends up with nothing to open is dropped too.
 - Columns are found by their header name, not position, because they move around between trackers (Era / Rec. Era / Album, Available Length / Portion / Availability, Link(s) / Links / Main Links / Download(s) / Source, and so on).
-- Era heading rows are recognised by the tally formula, the "℗ year" line, the era picture, or a timeline in the notes. Era covers come only from the picture in each era's own row on the song tabs. A heading that is just a picture gives its cover to the era named by the songs under it. Art tabs and hand-added links are never used, and an era with no picture in its row shows its name instead.
+- Era heading rows are recognised by the tally formula, the "℗ year" line, the era picture, or a timeline in the notes. A heading that is just a picture gives its cover to the era named by the songs under it.
+- Era covers work the same way as tracker-player's, in this order: a link added by hand in `covers/<artist>.json` (the same file tracker-player calls `cover-links-<artist>.json`), then the picture in the era's own row on the song tabs, then, only if the era has neither, the first picture the tracker's Art tab has under that era's name. An era with none of those shows its name instead. Every picture is saved to disk the first time it loads and served from there afterwards, and all of a tracker's covers are fetched in the background right after it is read, so a cover that has loaded once keeps loading even when Google refuses a request or its address for the picture goes stale. A hand-added link that is dead falls through to the sheet's picture.
 - Playable files: pillows.su, pixeldrain (old and new links), catbox, imgur.gg, exoshare and Google Drive. krakenfiles and music.froste.lol only give download pages, so those songs show as unplayable.
 
 ## Downloads and tagging
@@ -47,6 +48,12 @@ From a terminal you can also run `node server.js`. If port 3000 is taken it move
 - MP3 gets ID3v2.3, Ogg/Opus gets Vorbis comments, FLAC gets a comment block and picture, WAV gets an ID3 chunk. M4A is passed through untagged.
 - The era ZIP lets you pick everything / unreleased only / released only, and skip snippets and partials. It also has the cover and a `tracklist.txt`.
 - Downloads pass through the server, so on a hosted copy they use the server's bandwidth.
+- While an era ZIP is being built the next few files are fetched from the hosts at the same time (`ZIP_PARALLEL`), and written into the ZIP in tracker order. If a host answers "slow down" (HTTP 429) the rest of that era goes one file at a time and the refused file is asked for again, so nothing is left out.
+- A cover over 6 MB is still shown and still put in the ZIP as the cover file, but is left out of the tags, since it would add its full size to every song.
+
+## What is kept on disk
+
+The last reading of each tracker and the era pictures are kept in the system's temp folder (`archivedownloader-cache`, or wherever `CACHE_DIR` points). That is what makes a tracker open straight away after a restart, or after it was let go of to save memory: the saved copy is shown at once and a fresh one is read from Google behind it. Nothing in there is needed; deleting the folder only makes the next load slow.
 
 ## Settings (environment variables)
 
@@ -63,5 +70,9 @@ From a terminal you can also run `node server.js`. If port 3000 is taken it move
 | `MAX_ZIPS` | 6 (2 in public mode) | Era ZIPs allowed at once (one per visitor) |
 | `MAX_SONG_DOWNLOADS` | 20 (6 in public mode) | Single-song downloads allowed at once |
 | `REFRESH_MINUTES` | 15 | How often an open artist's tracker is re-read |
+| `ZIP_PARALLEL` | 3 (2 in public mode) | Files fetched at once while building an era ZIP (each is held in memory until written) |
+| `CACHE_DIR` | temp folder | Where saved trackers and covers are kept |
+| `COVER_CACHE_MB` | 300 | Most disk space the saved covers may use (oldest go first) |
+| `ART_TAB` | on | Set to 0 to never read a tracker's Art tab (it is only a cover fallback) |
 
 On a 1 GB server, also run Node with `--max-old-space-size=256` and `MALLOC_ARENA_MAX=2` (the hosting guide does this).

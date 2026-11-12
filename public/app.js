@@ -78,11 +78,36 @@
     }
   }
 
-  async function getJSON(url) {
+  async function fetchJSON(url) {
     const response = await fetch(url);
     const body = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(body.error || `HTTP ${response.status}`);
     return body;
+  }
+
+  // Requests that were started early (see warm) are picked up here instead of
+  // being made a second time.
+  const warmed = new Map();
+
+  function getJSON(url) {
+    const early = warmed.get(url);
+    if (early) {
+      warmed.delete(url);
+      // if the early one failed, ask again properly so the error is a real one
+      return early.catch(() => fetchJSON(url));
+    }
+    return fetchJSON(url);
+  }
+
+  // Start a request before its answer is needed. An artist's song list used to
+  // be asked for only after the era list had come back; asking for both at once
+  // takes a whole round trip off opening an artist.
+  function warm(url) {
+    if (warmed.has(url)) return;
+    const request = fetchJSON(url);
+    request.catch(() => {});
+    warmed.set(url, request);
+    setTimeout(() => { if (warmed.get(url) === request) warmed.delete(url); }, 30000);
   }
 
   /* ---------- artists ---------- */
@@ -216,6 +241,7 @@
     renderArtistBar();
     $("#tabs").innerHTML = "";
     view.innerHTML = `<div class="loading">Loading the ${esc(known ? known.name : "")} tracker...${known ? "" : " This can take a moment the first time."}</div>`;
+    if (!state.data.songs) warm(api("/tab/songs"));
     const meta = await getJSON(api("/meta"));
     if (state.artistKey !== key) return;
     state.meta = meta;
